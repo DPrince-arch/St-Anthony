@@ -1,0 +1,23 @@
+{
+  "name": "St. Anthony Catholic Church",
+  "short_name": "St. Anthony",
+  "description": "Daily readings, prayers, Mass bookings, and announcements for St. Anthony Catholic Church",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fbfaf8",
+  "theme_color": "#8b1d24",
+  "icons": [
+    {
+      "src": "/st-anthony.jpg",
+      "sizes": "192x192 512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/church-icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "churchName": "St. Anthony Catholic Church",
+  "parishAddress": "124 St. Anthony Way, Archdiocese of Lagos / Abuja / London",
+  "parishPriest": "Rev. Fr. Emmanuel Anthony, SDB",
+  "assistantPriest": "Rev. Fr. Jude Mary, OCD",
+  "contactPhone": "+234 803 123 4567",
+  "contactEmail": "office@stanthonyparish.org",
+  "bankDetails": {
+    "bankName": "Zenith Bank Plc",
+    "accountName": "St. Anthony Catholic Church - Mass Stipend",
+    "accountNumber": "1018892341",
+    "note": "Please include your surname as the transfer narration/reference and upload your receipt below."
+  },
+  "massSchedule": [
+    {
+      "day": "Sunday",
+      "times": [
+        "06:30 AM",
+        "09:00 AM",
+      ]
+    },
+    {
+      "day": "Monday",
+      "times": [
+        "06:30 AM (Morning Mass)",
+        "12:00 PM (Midday Mass)",
+        "06:30 PM (Evening Mass)"
+      ]
+    },
+    {
+      "day": "Saturday",
+      "times": [
+        "07:00 AM (Memorial of B.V.M)",
+        "06:00 PM (Sunday Vigil Mass)"
+      ]
+    }
+  ],
+  "confessionSchedule": "Saturdays after 7:00 AM Mass, and Wednesdays from 5:00 PM to 6:15 PM.",
+  "officeHours": "Tuesday - Friday: 9:00 AM - 4:00 PM (Father's Office: Wednesdays & Thursdays by appointment)",
+  "adminPasscode": "anthony2025"
+}

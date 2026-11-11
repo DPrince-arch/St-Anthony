@@ -1,0 +1,38 @@
+[
+  {
+    "id": "ann-1",
+    "title": "Solemn Feast of St. Anthony of Padua - 9 Days Novena",
+    "category": "liturgy",
+    "content": "The annual Novena in honor of our great patron saint, St. Anthony of Padua, commences this Friday. Each evening begins with Exposition of the Blessed Sacrament at 5:30 PM followed by Rosary, Novena prayers, and Holy Mass. Parishioners are encouraged to submit their petition slips at the parish office.",
+    "isPinned": true,
+    "publishedAt": "2026-11-08T10:52:58.730Z",
+    "author": "Parish Pastoral Council"
+  },
+  {
+    "id": "ann-2",
+    "title": "Notice on Mass Intentions & Stipend Receipts",
+    "category": "urgent",
+    "content": "Parishioners booking for Sunday Masses are reminded to book at least 48 hours in advance so the parish secretary can print the intentions for Father's altar list. Please ensure you transfer to the official parish account and upload a clear screenshot of your receipt.",
+    "isPinned": true,
+    "publishedAt": "2026-11-05T10:52:58.730Z",
+    "author": "Parish Secretariat"
+  },
+  {
+    "id": "ann-3",
+    "title": "Catholic Youth Organization (CYO) General Meeting",
+    "category": "society",
+    "content": "All youth and young adults of St. Anthony Parish are invited to the monthly fellowship and planning meeting this Sunday immediately after the 8:30 AM Mass at the Parish Hall. Breakfast will be served.",
+    "isPinned": false,
+    "publishedAt": "2026-11-03T10:52:58.730Z",
+    "author": "CYO Executive Committee"
+  },
+  {
+    "id": "ann-4",
+    "title": "Society of St. Vincent de Paul - Food & Clothing Drive",
+    "category": "general",
+    "content": "The St. Vincent de Paul society will be collecting non-perishable food items, toiletries, and gently used clothing for underprivileged families in our neighborhood. Donations can be dropped off at the SVDP basket by the church foyer.",
+    "isPinned": false,
+    "publishedAt": "2026-10-31T10:52:58.730Z",
+    "author": "SSVP President"
+  }
+]
