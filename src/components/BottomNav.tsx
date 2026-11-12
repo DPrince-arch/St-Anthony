@@ -1,22 +1,24 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { LayoutGrid, BookOpen, Heart, CalendarPlus, Megaphone, Shield } from 'lucide-react';
 
 interface BottomNavProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
   unreadAnnouncementsCount?: number;
 }
 
-export function BottomNav({ activeTab, setActiveTab, unreadAnnouncementsCount = 0 }: BottomNavProps) {
+export function BottomNav({ unreadAnnouncementsCount = 0 }: BottomNavProps) {
+  const pathname = usePathname();
+
   const tabs = [
-    { id: 'home', label: 'Home', icon: LayoutGrid },
-    { id: 'readings', label: 'Readings', icon: BookOpen },
-    { id: 'prayers', label: 'Prayers', icon: Heart },
-    { id: 'bookings', label: 'Bookings', icon: CalendarPlus },
-    { id: 'announcements', label: 'Notices', icon: Megaphone, badge: unreadAnnouncementsCount > 0 },
-    { id: 'admin', label: 'Admin', icon: Shield }
+    { href: '/', label: 'Home', icon: LayoutGrid },
+    { href: '/readings', label: 'Readings', icon: BookOpen },
+    { href: '/prayers', label: 'Prayers', icon: Heart },
+    { href: '/bookings', label: 'Bookings', icon: CalendarPlus },
+    { href: '/announcements', label: 'Notices', icon: Megaphone, badge: unreadAnnouncementsCount > 0 },
+    { href: '/admin', label: 'Admin', icon: Shield }
   ];
 
   return (
@@ -26,11 +28,11 @@ export function BottomNav({ activeTab, setActiveTab, unreadAnnouncementsCount = 
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-center space-x-1 py-1.5">
           {tabs.map((tab) => {
             const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
+            const isActive = pathname === tab.href;
             return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+              <Link
+                key={tab.href}
+                href={tab.href}
                 className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center space-x-2 ${
                   isActive
                     ? 'bg-white text-amber-950 shadow-xs border border-stone-200/80 font-semibold'
@@ -42,7 +44,7 @@ export function BottomNav({ activeTab, setActiveTab, unreadAnnouncementsCount = 
                 {tab.badge && (
                   <span className="w-2 h-2 rounded-full bg-red-600 ring-2 ring-white" />
                 )}
-              </button>
+              </Link>
             );
           })}
         </div>
@@ -53,11 +55,11 @@ export function BottomNav({ activeTab, setActiveTab, unreadAnnouncementsCount = 
         <div className="flex items-center justify-around">
           {tabs.map((tab) => {
             const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
+            const isActive = pathname === tab.href;
             return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+              <Link
+                key={tab.href}
+                href={tab.href}
                 className={`flex flex-col items-center py-1.5 px-2 rounded-xl transition-all relative ${
                   isActive
                     ? 'text-amber-900 font-semibold'
@@ -76,7 +78,7 @@ export function BottomNav({ activeTab, setActiveTab, unreadAnnouncementsCount = 
                 {isActive && (
                   <span className="w-4 h-0.5 bg-amber-800 rounded-full mt-0.5" />
                 )}
-              </button>
+              </Link>
             );
           })}
         </div>

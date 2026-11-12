@@ -6,8 +6,8 @@ export const metadata: Metadata = {
   description: "Official parish application for St. Anthony Catholic Church. Access daily readings, prayers, Rosary, Mass bookings, and announcements.",
   manifest: "/manifest.json",
   icons: {
-    icon: "/st-anthony.jpg",
-    apple: "/st-anthony.jpg",
+    icon: "/church-icon.svg",
+    apple: "/church-icon.svg",
   },
   appleWebApp: {
     capable: true,

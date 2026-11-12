@@ -14,9 +14,13 @@ export function MassScheduleModal({ isOpen, onClose, settings }: MassScheduleMod
   if (!isOpen) return null;
 
   const schedules = settings?.massSchedule || [
-    { day: "Sunday", times: ["06:30 AM (Dawn Mass)", "08:30 AM (Family & Children Mass)", "10:30 AM (High / Choral Mass)", "06:00 PM (Youth Mass)"] },
-    { day: "Monday - Friday", times: ["06:30 AM (Morning Mass)", "12:00 PM (Midday Mass)", "06:30 PM (Evening Mass)"] },
-    { day: "Saturday", times: ["07:00 AM (Memorial of B.V.M)", "06:00 PM (Sunday Vigil Mass)"] }
+    { day: "Sunday", times: ["06:30 AM", "09:00 AM", "06:30 PM (Only on last sundays of the month)"] },
+    { day: "Monday", times: ["06:30 AM", "06:30 PM"] },
+    { day: "Teusday", times: ["06:30 AM"]},
+    { day: "Wednesday", times: ["06:30 PM"]},
+    { day: "Thursday", times: ["06:30 AM, Followed by Adoration"]},
+    { day: "Friday:", times: ["06:30 AM"]},
+    { day: "Saturday", times: ["07:00 AM (Memorial of B.V.M)"] }
   ];
 
   return (
@@ -74,12 +78,12 @@ export function MassScheduleModal({ isOpen, onClose, settings }: MassScheduleMod
         <div className="pt-2 border-t border-stone-100 space-y-3 text-xs text-stone-600">
           <div>
             <span className="font-bold text-stone-900 block">Sacrament of Reconciliation (Confession):</span>
-            <p className="mt-0.5">{settings?.confessionSchedule || "Saturdays after 7:00 AM Mass, and Wednesdays from 5:00 PM to 6:15 PM."}</p>
+            <p className="mt-0.5">{settings?.confessionSchedule || "Saturdays after 7:00 AM Mass"}</p>
           </div>
 
           <div>
             <span className="font-bold text-stone-900 block">Parish Office & Priests Visiting Hours:</span>
-            <p className="mt-0.5">{settings?.officeHours || "Tuesday - Friday: 9:00 AM - 4:00 PM (Father's Office: Wednesdays & Thursdays by appointment)"}</p>
+            <p className="mt-0.5">{settings?.officeHours || "Mondays - Friday: 9:00 AM - 4:00 PM"}</p>
           </div>
         </div>
 

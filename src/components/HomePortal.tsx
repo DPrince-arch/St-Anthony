@@ -1,134 +1,104 @@
 'use client';
 
 import React from 'react';
-import { ArrowRight, BookOpen, Heart, CalendarPlus, Megaphone, Shield, Clock, Church, Sparkles } from 'lucide-react';
-import { BookingType } from '@/lib/types';
+import Link from 'next/link';
+import { 
+  ArrowRight, 
+  BookOpen, 
+  Heart, 
+  CalendarPlus, 
+  Megaphone, 
+  ShieldCheck, 
+  Clock, 
+  Church, 
+  Gift, 
+  UserCheck 
+} from 'lucide-react';
 
 interface HomePortalProps {
-  onNavigate: (tab: string, bookingType?: BookingType) => void;
   onOpenSchedule: () => void;
 }
 
-export function HomePortal({ onNavigate, onOpenSchedule }: HomePortalProps) {
+export function HomePortal({ onOpenSchedule }: HomePortalProps) {
   const sections = [
     {
       id: 'readings',
       title: 'Daily Liturgical Readings',
-      subtitle: 'First reading, psalm, gospel & daily homily',
-      action: () => onNavigate('readings')
+      subtitle: 'First reading, psalm, gospel & pastoral reflection',
+      href: '/readings',
+      icon: BookOpen,
+      iconColor: 'text-amber-800 bg-amber-50'
     },
     {
       id: 'prayers',
       title: 'Prayers & Holy Rosary',
-      subtitle: 'Mysteries, interactive bead counter & litanies',
-      action: () => onNavigate('prayers')
+      subtitle: 'Holy Rosary, Litanies, Divine Mercy & devotions',
+      href: '/prayers',
+      icon: Heart,
+      iconColor: 'text-rose-800 bg-rose-50'
     },
     {
       id: 'mass_booking',
       title: 'Mass Intentions Booking',
-      subtitle: 'Offer a Mass & upload stipend receipt',
-      action: () => onNavigate('bookings', 'mass_intention')
+      subtitle: 'Book a Mass, upload stipend receipt & get reference',
+      href: '/bookings?type=mass_intention',
+      icon: Church,
+      iconColor: 'text-emerald-800 bg-emerald-50'
     },
     {
       id: 'thanksgiving',
       title: 'Thanksgiving Offering',
-      subtitle: 'Birthdays, anniversaries & harvest thanks',
-      action: () => onNavigate('bookings', 'thanksgiving')
+      subtitle: 'Birthdays, wedding anniversaries & harvest thanks',
+      href: '/bookings?type=thanksgiving',
+      icon: Gift,
+      iconColor: 'text-amber-800 bg-amber-50'
     },
     {
       id: 'priest_appointment',
       title: 'Appointment with Priest',
       subtitle: 'Confession, counseling & spiritual direction',
-      action: () => onNavigate('bookings', 'priest_appointment')
+      href: '/bookings?type=priest_appointment',
+      icon: UserCheck,
+      iconColor: 'text-blue-800 bg-blue-50'
     },
     {
       id: 'announcements',
       title: 'Parish Announcements',
-      subtitle: 'Weekly bulletin, societies & urgent notices',
-      action: () => onNavigate('announcements')
+      subtitle: 'Weekly church bulletin, societies & urgent notices',
+      href: '/announcements',
+      icon: Megaphone,
+      iconColor: 'text-orange-800 bg-orange-50'
     },
     {
       id: 'schedule',
       title: 'Mass & Confession Schedule',
-      subtitle: 'Daily Mass timetable & office visiting hours',
-      action: onOpenSchedule
-    },
-    {
-      id: 'st_anthony_litany',
-      title: 'Litany of Saint Anthony',
-      subtitle: 'Patron saint of lost things and the poor',
-      action: () => onNavigate('prayers')
+      subtitle: 'Weekly Mass timetable & office visiting hours',
+      onClick: onOpenSchedule,
+      icon: Clock,
+      iconColor: 'text-stone-800 bg-stone-100'
     },
     {
       id: 'admin_portal',
       title: 'Parish Staff & Admin Portal',
       subtitle: 'Verify receipts, print altar sheets & post notices',
-      action: () => onNavigate('admin')
+      href: '/admin',
+      icon: ShieldCheck,
+      iconColor: 'text-amber-900 bg-amber-100'
     }
   ];
 
   return (
-    <div className="relative min-h-[85vh] flex flex-col justify-between py-6 sm:py-10 px-4 sm:px-6 overflow-hidden">
-      {/* Decorative Floral Background Corners (Styled after user reference) */}
-      <div className="absolute -top-10 -left-10 w-64 h-64 sm:w-80 sm:h-80 pointer-events-none opacity-85 select-none">
-        <svg viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-          {/* Leaves */}
-          <path d="M120 70 C160 50 190 90 170 130 C150 110 130 90 120 70 Z" fill="#8f9f78" opacity="0.6"/>
-          <path d="M60 130 C70 170 110 180 130 150 C110 140 80 130 60 130 Z" fill="#a4b38d" opacity="0.7"/>
-          <path d="M140 140 C170 160 190 200 170 230 C150 200 145 170 140 140 Z" fill="#8f9f78" opacity="0.5"/>
-          <path d="M40 70 C20 110 50 140 80 130 C70 100 50 80 40 70 Z" fill="#b9c7a5" opacity="0.6"/>
-          
-          {/* Top Blossom */}
-          <g transform="translate(130, 80)">
-            <circle cx="0" cy="0" r="14" fill="#d4af37" opacity="0.8"/>
-            <circle cx="0" cy="-22" r="18" fill="#fdfaf3" stroke="#e8ded1" strokeWidth="1.5"/>
-            <circle cx="21" cy="-7" r="18" fill="#fcf8ef" stroke="#e8ded1" strokeWidth="1.5"/>
-            <circle cx="13" cy="18" r="18" fill="#fefcf7" stroke="#e8ded1" strokeWidth="1.5"/>
-            <circle cx="-13" cy="18" r="18" fill="#faf5eb" stroke="#e8ded1" strokeWidth="1.5"/>
-            <circle cx="-21" cy="-7" r="18" fill="#fdfaf3" stroke="#e8ded1" strokeWidth="1.5"/>
-            <circle cx="0" cy="0" r="9" fill="#c99e32"/>
-            {/* Stamen dots */}
-            <circle cx="-3" cy="-3" r="1.5" fill="#8b5e14"/>
-            <circle cx="3" cy="-3" r="1.5" fill="#8b5e14"/>
-            <circle cx="0" cy="3" r="1.5" fill="#8b5e14"/>
-          </g>
-
-          {/* Lower Blossom */}
-          <g transform="translate(80, 160) scale(0.85)">
-            <circle cx="0" cy="-22" r="18" fill="#fdfaf3" stroke="#e8ded1" strokeWidth="1.5"/>
-            <circle cx="21" cy="-7" r="18" fill="#fcf8ef" stroke="#e8ded1" strokeWidth="1.5"/>
-            <circle cx="13" cy="18" r="18" fill="#fefcf7" stroke="#e8ded1" strokeWidth="1.5"/>
-            <circle cx="-13" cy="18" r="18" fill="#faf5eb" stroke="#e8ded1" strokeWidth="1.5"/>
-            <circle cx="-21" cy="-7" r="18" fill="#fdfaf3" stroke="#e8ded1" strokeWidth="1.5"/>
-            <circle cx="0" cy="0" r="9" fill="#c99e32"/>
-          </g>
-        </svg>
-      </div>
-
-      <div className="absolute -bottom-10 -right-10 w-64 h-64 sm:w-80 sm:h-80 pointer-events-none opacity-85 select-none rotate-180">
-        <svg viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-          <path d="M120 70 C160 50 190 90 170 130 C150 110 130 90 120 70 Z" fill="#8f9f78" opacity="0.6"/>
-          <path d="M60 130 C70 170 110 180 130 150 C110 140 80 130 60 130 Z" fill="#a4b38d" opacity="0.7"/>
-          <g transform="translate(130, 80)">
-            <circle cx="0" cy="-22" r="18" fill="#fdfaf3" stroke="#e8ded1" strokeWidth="1.5"/>
-            <circle cx="21" cy="-7" r="18" fill="#fcf8ef" stroke="#e8ded1" strokeWidth="1.5"/>
-            <circle cx="13" cy="18" r="18" fill="#fefcf7" stroke="#e8ded1" strokeWidth="1.5"/>
-            <circle cx="-13" cy="18" r="18" fill="#faf5eb" stroke="#e8ded1" strokeWidth="1.5"/>
-            <circle cx="-21" cy="-7" r="18" fill="#fdfaf3" stroke="#e8ded1" strokeWidth="1.5"/>
-            <circle cx="0" cy="0" r="9" fill="#c99e32"/>
-          </g>
-        </svg>
-      </div>
-
-      {/* Main Content Area */}
-      <div className="max-w-4xl mx-auto w-full z-10 text-center space-y-8 sm:space-y-10">
+    <div className="min-h-[75vh] flex flex-col justify-between py-6 sm:py-10 px-4 sm:px-6">
+      {/* Main Content Container (No floral patterns) */}
+      <div className="max-w-4xl mx-auto w-full text-center space-y-8 sm:space-y-10">
         {/* Top Header Block */}
         <div className="space-y-3 pt-2 sm:pt-4">
-          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden mx-auto shadow-md ring-4 ring-amber-300/40 bg-amber-950">
+          {/* Church Crest Emblem */}
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto shadow-md ring-4 ring-amber-500/20 bg-gradient-to-br from-amber-900 to-red-950 flex items-center justify-center p-2 text-white">
             <img
-              src="/st-anthony.jpg"
-              alt="St. Anthony of Padua"
-              className="w-full h-full object-cover object-top"
+              src="/church-icon.svg"
+              alt="St. Anthony Catholic Church"
+              className="w-full h-full object-contain"
             />
           </div>
 
@@ -142,48 +112,75 @@ export function HomePortal({ onNavigate, onOpenSchedule }: HomePortalProps) {
           </div>
 
           <p className="font-serif italic text-stone-600 text-sm sm:text-base max-w-xl mx-auto leading-relaxed px-4">
-            We would be delighted to welcome you to the Lord&apos;s house. Please begin by choosing where you would like to go.
+            We would be delighted to welcome you to the Lord&apos;s house. Please select a section below to proceed.
           </p>
         </div>
 
         {/* Section Divider & Question */}
         <div className="space-y-4">
           <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-stone-500 block">
-            WHERE WOULD YOU LIKE TO BEGIN?
+            CHOOSE A SECTION TO PROCEED
           </span>
 
-          {/* Cards Grid (3 Columns on Desktop, 2 on Tablet, 1 on Mobile) */}
+          {/* Section Buttons Grid (Sends user to each new page) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 text-left">
-            {sections.map((sec) => (
-              <button
-                key={sec.id}
-                onClick={sec.action}
-                className="group bg-white/95 hover:bg-white rounded-2xl p-4 sm:p-5 border border-stone-200/90 hover:border-amber-400/80 shadow-xs hover:shadow-md transition-all duration-200 flex items-center justify-between text-left active:scale-[0.98]"
-              >
-                <div className="pr-2">
-                  <h3 className="font-serif font-semibold text-stone-900 group-hover:text-amber-950 text-base sm:text-[17px] leading-snug transition-colors">
-                    {sec.title}
-                  </h3>
-                  <p className="text-xs text-stone-500 line-clamp-1 mt-1 font-sans">
-                    {sec.subtitle}
-                  </p>
-                </div>
+            {sections.map((sec) => {
+              const Icon = sec.icon;
 
-                <div className="w-8 h-8 rounded-full bg-stone-50 group-hover:bg-amber-100/80 flex items-center justify-center shrink-0 transition-colors">
-                  <ArrowRight className="w-4 h-4 text-stone-400 group-hover:text-amber-800 transition-transform group-hover:translate-x-0.5" />
+              const cardContent = (
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center space-x-3.5 pr-2">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${sec.iconColor} transition-transform group-hover:scale-105`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-serif font-semibold text-stone-900 group-hover:text-amber-950 text-base sm:text-[17px] leading-snug transition-colors">
+                        {sec.title}
+                      </h3>
+                      <p className="text-xs text-stone-500 line-clamp-1 mt-0.5 font-sans">
+                        {sec.subtitle}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="w-8 h-8 rounded-full bg-stone-50 group-hover:bg-amber-100 flex items-center justify-center shrink-0 transition-colors ml-2">
+                    <ArrowRight className="w-4 h-4 text-stone-400 group-hover:text-amber-800 transition-transform group-hover:translate-x-0.5" />
+                  </div>
                 </div>
-              </button>
-            ))}
+              );
+
+              if (sec.href) {
+                return (
+                  <Link
+                    key={sec.id}
+                    href={sec.href}
+                    className="group bg-white hover:bg-stone-50/80 rounded-2xl p-4 sm:p-5 border border-stone-200/90 hover:border-amber-400/80 shadow-xs hover:shadow-md transition-all duration-200 flex items-center text-left active:scale-[0.98]"
+                  >
+                    {cardContent}
+                  </Link>
+                );
+              }
+
+              return (
+                <button
+                  key={sec.id}
+                  onClick={sec.onClick}
+                  className="group bg-white hover:bg-stone-50/80 rounded-2xl p-4 sm:p-5 border border-stone-200/90 hover:border-amber-400/80 shadow-xs hover:shadow-md transition-all duration-200 flex items-center text-left active:scale-[0.98] w-full"
+                >
+                  {cardContent}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Bottom Help Section (Matching reference footer) */}
+        {/* Bottom Help Section */}
         <div className="pt-8 sm:pt-10 border-t border-stone-200/60 max-w-xl mx-auto space-y-1">
           <h4 className="font-serif font-bold text-sm sm:text-base text-stone-800">
             Need help with your booking or pastoral intention?
           </h4>
           <p className="text-xs sm:text-sm text-stone-500 leading-relaxed">
-            If you have a question about Mass intentions, sacramental preparations, or pastoral counseling, reach out to the parish office or visit Father&apos;s office on Wednesdays and Thursdays.
+            If you have a question about Mass intentions, confessions, or sacramental preparations, visit the parish secretariat or contact Father&apos;s office.
           </p>
         </div>
       </div>

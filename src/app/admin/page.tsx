@@ -54,7 +54,9 @@ export default function AdminPage() {
           </Link>
 
           <div className="flex items-center space-x-2">
-            <img src="/st-anthony.jpg" alt="St. Anthony" className="w-8 h-8 rounded-full object-cover object-top ring-2 ring-amber-400" />
+            <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-amber-400 bg-amber-950 p-1 flex items-center justify-center">
+              <img src="/church-icon.svg" alt="Church Emblem" className="w-full h-full object-contain" />
+            </div>
             <span className="font-serif font-bold text-sm text-stone-900">Parish Administration</span>
           </div>
         </div>

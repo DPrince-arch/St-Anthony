@@ -378,24 +378,6 @@ export function ReadingsSection({ initialReadings, onDateChange, selectedDate }:
                 </div>
               </div>
             )}
-
-            {/* DAILY REFLECTION */}
-            {readings.dailyReflection && (activeTab === 'all' || activeTab === 'reflection') && (
-              <div className="bg-gradient-to-br from-amber-50 to-stone-50 rounded-2xl p-6 sm:p-8 shadow-xs border border-amber-200/80">
-                <div className="flex items-center space-x-3 mb-3">
-                  <div className="w-8 h-8 rounded-full bg-amber-800 text-white flex items-center justify-center font-serif text-sm font-bold">
-                    ✝
-                  </div>
-                  <div>
-                    <h3 className="font-serif font-bold text-lg text-amber-950">Daily Pastoral Reflection</h3>
-                    <p className="text-xs text-amber-800 font-medium">{readings.dailyReflection.author}</p>
-                  </div>
-                </div>
-                <p className="font-serif text-stone-800 text-base sm:text-lg leading-relaxed italic">
-                  "{readings.dailyReflection.text}"
-                </p>
-              </div>
-            )}
           </div>
         </>
       ) : (
