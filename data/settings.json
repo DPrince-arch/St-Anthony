@@ -1,8 +1,7 @@
 {
   "churchName": "St. Anthony Catholic Church",
   "parishAddress": "124 St. Anthony Way, Archdiocese of Lagos / Abuja / London",
-  "parishPriest": "Rev. Fr. Emmanuel Anthony, SDB",
-  "assistantPriest": "Rev. Fr. Jude Mary, OCD",
+  "parishPriest": "Rev. Fr. Vincent Chukwujekwu",
   "contactPhone": "+234 803 123 4567",
   "contactEmail": "office@stanthonyparish.org",
   "bankDetails": {
@@ -35,7 +34,7 @@
       ]
     }
   ],
-  "confessionSchedule": "Saturdays after 7:00 AM Mass, and Wednesdays from 5:00 PM to 6:15 PM.",
-  "officeHours": "Tuesday - Friday: 9:00 AM - 4:00 PM (Father's Office: Wednesdays & Thursdays by appointment)",
-  "adminPasscode": "anthony2025"
+  "confessionSchedule": "Saturdays after 7:00 AM Mass",
+  "officeHours": "Monday - Friday: 9:00 AM - 4:00 PM ",
+  "adminPasscode": "anthony2027"
 }

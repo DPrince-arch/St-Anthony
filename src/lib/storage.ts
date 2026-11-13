@@ -19,8 +19,7 @@ function ensureDataDir() {
 const defaultSettings: ParishSettings = {
   churchName: "St. Anthony Catholic Church",
   parishAddress: "124 St. Anthony Way, Archdiocese of Lagos / Abuja / London",
-  parishPriest: "Rev. Fr. Emmanuel Anthony, SDB",
-  assistantPriest: "Rev. Fr. Jude Mary, OCD",
+  parishPriest: "Rev. Fr. Vincent Chukwujekwu",
   contactPhone: "+234 803 123 4567",
   contactEmail: "office@stanthonyparish.org",
   bankDetails: {
@@ -30,13 +29,17 @@ const defaultSettings: ParishSettings = {
     note: "Please include your surname as the transfer narration/reference and upload your receipt below."
   },
   massSchedule: [
-    { day: "Sunday", times: ["06:30 AM (Dawn Mass)", "08:30 AM (Family Mass)", "10:30 AM (High Mass)", "06:00 PM (Youth Mass)"] },
-    { day: "Monday - Friday", times: ["06:30 AM (Morning Mass)", "12:00 PM (Midday Mass)", "06:30 PM (Evening Mass)"] },
-    { day: "Saturday", times: ["07:00 AM (Memorial of B.V.M)", "06:00 PM (Sunday Vigil Mass)"] }
+     { day: "Sunday", times: ["06:30 AM", "09:00 AM", "06:30 PM (Only on last sundays of the month)"] },
+    { day: "Monday", times: ["06:30 AM", "06:30 PM"] },
+    { day: "Teusday", times: ["06:30 AM"]},
+    { day: "Wednesday", times: ["06:30 PM"]},
+    { day: "Thursday", times: ["06:30 AM, Followed by Adoration"]},
+    { day: "Friday:", times: ["06:30 AM"]},
+    { day: "Saturday", times: ["07:00 AM (Memorial of B.V.M)"] }
   ],
-  confessionSchedule: "Saturdays after 7:00 AM Mass, and Wednesdays from 5:00 PM to 6:15 PM.",
-  officeHours: "Tuesday - Friday: 9:00 AM - 4:00 PM (Father's Office: Wednesdays & Thursdays by appointment)",
-  adminPasscode: "anthony2025" // Default admin passcode, can be changed in admin settings
+  confessionSchedule: "Saturdays after 7:00 AM Mass",
+  officeHours: "Monday - Friday: 9:00 AM - 4:00 PM",
+  adminPasscode: "anthony2027" // Default admin passcode, can be changed in admin settings
 };
 
 // Initial Sample Announcements

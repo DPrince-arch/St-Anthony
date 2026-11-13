@@ -276,7 +276,6 @@ export function AdminPanel({
                 className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3.5 py-2.5 text-sm text-stone-900 focus:ring-2 focus:ring-amber-500 focus:outline-hidden text-center tracking-widest text-lg"
               />
               <p className="text-[11px] text-stone-400 mt-1.5 text-left">
-                Default demo passcode: <code className="bg-stone-100 px-1 py-0.5 rounded text-amber-900 font-mono">anthony2025</code>
               </p>
             </div>
 

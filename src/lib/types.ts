@@ -108,7 +108,6 @@ export interface ParishSettings {
   churchName: string;
   parishAddress: string;
   parishPriest: string;
-  assistantPriest: string;
   contactPhone: string;
   contactEmail: string;
   bankDetails: {
