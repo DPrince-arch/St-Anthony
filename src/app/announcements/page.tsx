@@ -6,17 +6,14 @@ import { ArrowLeft } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { AnnouncementsSection } from '@/components/AnnouncementsSection';
-import { Announcement, DailyLiturgicalReadings } from '@/lib/types';
-import { getLiturgicalReadingsForDate } from '@/lib/liturgicalData';
+import { Announcement } from '@/lib/types';
+import { useLiturgicalReadings } from '@/lib/useLiturgicalReadings';
 
 export default function AnnouncementsPage() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-  const [readings, setReadings] = useState<DailyLiturgicalReadings | null>(null);
+  const { readings } = useLiturgicalReadings();
 
   useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
-    setReadings(getLiturgicalReadingsForDate(today));
-
     fetch('/api/announcements')
       .then(res => res.json())
       .then(json => {

@@ -19,6 +19,7 @@ export interface DailyLiturgicalReadings {
   color: LiturgicalColor;
   colorHex: string;
   rank: 'Solemnity' | 'Feast' | 'Memorial' | 'Optional Memorial' | 'Weekday';
+  otherCelebrations?: string[];
   saintOfTheDay?: string;
   saintSummary?: string;
   readings: {
@@ -27,8 +28,18 @@ export interface DailyLiturgicalReadings {
     secondReading?: ReadingItem;
     gospelAcclamation: {
       verse: string;
+      citation: string;
+      response: string;
     };
     gospel: ReadingItem;
+  };
+  dataSource?: {
+    calendarName: string;
+    calendarUrl: string;
+    readingsName: string;
+    readingsUrl: string;
+    translationName: string;
+    isNigeriaSpecific: boolean;
   };
   dailyReflection?: {
     author: string;
@@ -84,13 +95,20 @@ export interface Booking {
   appointmentReason?: 'spiritual_direction' | 'confession' | 'counseling' | 'sick_call' | 'other';
   preferredTimeSlot?: string;
   notes?: string;
-  // Receipt Upload (Bank transfer verification)
-  receiptImage?: string; // Data URL or URL
+  hasReceipt?: boolean;
   receiptUploadedAt?: string;
   // Admin fields
   status: BookingStatus;
   adminNotes?: string;
   createdAt: string;
+}
+
+export interface BookingPagination {
+  page: number;
+  pageSize: number;
+  total: number;
+  pages: number;
+  statusCounts: Record<BookingStatus, number>;
 }
 
 export interface Announcement {

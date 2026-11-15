@@ -7,8 +7,8 @@ import { ArrowLeft } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { BookingsSection } from '@/components/BookingsSection';
-import { ParishSettings, BookingType, DailyLiturgicalReadings } from '@/lib/types';
-import { getLiturgicalReadingsForDate } from '@/lib/liturgicalData';
+import { ParishSettings, BookingType } from '@/lib/types';
+import { useLiturgicalReadings } from '@/lib/useLiturgicalReadings';
 
 function BookingsContent() {
   const searchParams = useSearchParams();
@@ -19,12 +19,9 @@ function BookingsContent() {
     : 'mass_intention';
 
   const [settings, setSettings] = useState<ParishSettings | null>(null);
-  const [readings, setReadings] = useState<DailyLiturgicalReadings | null>(null);
+  const { readings } = useLiturgicalReadings();
 
   useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
-    setReadings(getLiturgicalReadingsForDate(today));
-
     fetch('/api/settings')
       .then(res => res.json())
       .then(json => {

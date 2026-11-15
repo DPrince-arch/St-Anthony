@@ -6,30 +6,17 @@ import { ArrowLeft } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { ReadingsSection } from '@/components/ReadingsSection';
-import { DailyLiturgicalReadings } from '@/lib/types';
-import { getLiturgicalReadingsForDate } from '@/lib/liturgicalData';
+import { useLiturgicalReadings } from '@/lib/useLiturgicalReadings';
 
 export default function ReadingsPage() {
   const [selectedDate, setSelectedDate] = useState<string>('');
-  const [readings, setReadings] = useState<DailyLiturgicalReadings | null>(null);
 
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
-    setSelectedDate(today);
+    void Promise.resolve().then(() => setSelectedDate(today));
   }, []);
 
-  useEffect(() => {
-    if (!selectedDate) return;
-    const localData = getLiturgicalReadingsForDate(selectedDate);
-    setReadings(localData);
-
-    fetch(`/api/readings?date=${selectedDate}`)
-      .then(res => res.json())
-      .then(json => {
-        if (json.success && json.data) setReadings(json.data);
-      })
-      .catch(() => console.log('Using local liturgical data engine fallback'));
-  }, [selectedDate]);
+  const { readings, error, loading } = useLiturgicalReadings(selectedDate);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#faf7f2] text-stone-900 selection:bg-amber-100 selection:text-amber-900">
@@ -49,8 +36,10 @@ export default function ReadingsPage() {
 
         <ReadingsSection
           initialReadings={readings}
-          selectedDate={selectedDate || '2026-11-12'}
+          selectedDate={selectedDate}
           onDateChange={setSelectedDate}
+          error={error}
+          loading={loading}
         />
       </main>
 

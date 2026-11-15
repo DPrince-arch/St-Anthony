@@ -6,25 +6,29 @@ import { BottomNav } from '@/components/BottomNav';
 import { HomePortal } from '@/components/HomePortal';
 import { SplashScreen } from '@/components/SplashScreen';
 import { MassScheduleModal } from '@/components/MassScheduleModal';
-import { DailyLiturgicalReadings, ParishSettings } from '@/lib/types';
-import { getLiturgicalReadingsForDate } from '@/lib/liturgicalData';
+import { ParishSettings } from '@/lib/types';
+import { useLiturgicalReadings } from '@/lib/useLiturgicalReadings';
 
 export default function Home() {
   const [isScheduleOpen, setIsScheduleOpen] = useState<boolean>(false);
-  const [readings, setReadings] = useState<DailyLiturgicalReadings | null>(null);
+  const { readings } = useLiturgicalReadings();
   const [settings, setSettings] = useState<ParishSettings | null>(null);
   const [unreadCount, setUnreadCount] = useState<number>(0);
 
   useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
-    setReadings(getLiturgicalReadingsForDate(today));
-
     // Fetch announcements for badge and settings for schedule modal
     fetch('/api/announcements')
       .then(res => res.json())
       .then(json => {
         if (json.success && Array.isArray(json.data)) {
-          setUnreadCount(json.data.filter((a: any) => a.isPinned).length);
+          const pinnedAnnouncements = (json.data as unknown[]).filter(
+            (announcement: unknown): announcement is { isPinned: boolean } =>
+              typeof announcement === 'object' &&
+              announcement !== null &&
+              'isPinned' in announcement &&
+              typeof announcement.isPinned === 'boolean'
+          );
+          setUnreadCount(pinnedAnnouncements.filter(announcement => announcement.isPinned).length);
         }
       })
       .catch(() => {});

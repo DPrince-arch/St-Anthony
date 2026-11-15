@@ -6,14 +6,16 @@
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "migrate:bookings": "node --env-file=.env.local scripts/migrate-bookings.mjs"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.3.5",
     "lucide-react": "^1.71.0",
     "next": "16.4.6",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "@supabase/supabase-js": "^2.56.0"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "4.3.3",

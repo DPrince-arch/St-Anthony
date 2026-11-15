@@ -1,22 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { BottomNav } from '@/components/BottomNav';
 import { PrayersSection } from '@/components/PrayersSection';
-import { DailyLiturgicalReadings } from '@/lib/types';
-import { getLiturgicalReadingsForDate } from '@/lib/liturgicalData';
+import { useLiturgicalReadings } from '@/lib/useLiturgicalReadings';
 
 export default function PrayersPage() {
-  const [readings, setReadings] = useState<DailyLiturgicalReadings | null>(null);
-
-  useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
-    const data = getLiturgicalReadingsForDate(today);
-    setReadings(data);
-  }, []);
+  const { readings } = useLiturgicalReadings();
 
   return (
     <div className="min-h-screen flex flex-col bg-[#faf7f2] text-stone-900 selection:bg-amber-100 selection:text-amber-900">

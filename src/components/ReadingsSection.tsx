@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
-  Calendar as CalendarIcon, 
   ChevronLeft, 
   ChevronRight, 
   Volume2, 
@@ -16,26 +15,23 @@ import {
   Check
 } from 'lucide-react';
 import { DailyLiturgicalReadings } from '@/lib/types';
-import { LITURGICAL_COLORS } from '@/lib/liturgicalData';
+import { LITURGICAL_COLORS } from '@/lib/liturgicalColors';
 
 interface ReadingsSectionProps {
   initialReadings: DailyLiturgicalReadings | null;
   onDateChange: (dateStr: string) => void;
   selectedDate: string;
+  loading?: boolean;
+  error?: string | null;
 }
 
-export function ReadingsSection({ initialReadings, onDateChange, selectedDate }: ReadingsSectionProps) {
-  const [readings, setReadings] = useState<DailyLiturgicalReadings | null>(initialReadings);
-  const [loading, setLoading] = useState(false);
+type ReadingTab = 'all' | 'first' | 'psalm' | 'second' | 'gospel' | 'reflection';
+
+export function ReadingsSection({ initialReadings: readings, onDateChange, selectedDate, loading = false, error }: ReadingsSectionProps) {
   const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xlarge'>('normal');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'first' | 'psalm' | 'second' | 'gospel' | 'reflection'>('all');
-
-  // Synchronize when initialReadings changes
-  useEffect(() => {
-    setReadings(initialReadings);
-  }, [initialReadings]);
 
   // Adjust date by offset
   const shiftDate = (days: number) => {
@@ -66,12 +62,13 @@ export function ReadingsSection({ initialReadings, onDateChange, selectedDate }:
     if (!readings) return;
 
     const fullSpeechText = `
-      Liturgical Readings for ${readings.celebrationTitle}.
-      First Reading, from ${readings.readings.firstReading.citation}. ${readings.readings.firstReading.text}.
-      Responsorial Psalm, from ${readings.readings.psalm.citation}. Response: ${readings.readings.psalm.response}.
-      ${readings.readings.secondReading ? `Second Reading, from ${readings.readings.secondReading.citation}. ${readings.readings.secondReading.text}.` : ''}
-      The Holy Gospel according to ${readings.readings.gospel.citation}. ${readings.readings.gospel.text}.
-      Reflection: ${readings.dailyReflection?.text || ''}
+      Scripture references for ${readings.celebrationTitle}.
+      First Reading: ${readings.readings.firstReading.citation}.
+      Responsorial Psalm: ${readings.readings.psalm.citation}.
+      ${readings.readings.secondReading ? `Second Reading: ${readings.readings.secondReading.citation}.` : ''}
+      Gospel Acclamation: ${readings.readings.gospelAcclamation.verse || readings.readings.gospelAcclamation.response}.
+      Gospel: ${readings.readings.gospel.citation}.
+      Full scripture text is available from the United States Conference of Catholic Bishops.
     `;
 
     const utterance = new SpeechSynthesisUtterance(fullSpeechText);
@@ -103,6 +100,14 @@ export function ReadingsSection({ initialReadings, onDateChange, selectedDate }:
     large: 'text-lg sm:text-xl leading-relaxed',
     xlarge: 'text-xl sm:text-2xl leading-relaxed'
   }[fontSize];
+  const tabs: { id: ReadingTab; label: string }[] = [
+    { id: 'all', label: 'Continuous View' },
+    { id: 'first', label: 'First Reading' },
+    { id: 'psalm', label: 'Responsorial Psalm' },
+    ...(readings?.readings.secondReading ? [{ id: 'second' as const, label: 'Second Reading' }] : []),
+    { id: 'gospel', label: 'Holy Gospel' },
+    ...(readings?.dailyReflection ? [{ id: 'reflection' as const, label: 'Homily & Reflection' }] : [])
+  ];
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto pb-16">
@@ -112,6 +117,7 @@ export function ReadingsSection({ initialReadings, onDateChange, selectedDate }:
         <div className="flex items-center space-x-2 w-full md:w-auto justify-between md:justify-start">
           <button
             onClick={() => shiftDate(-1)}
+            disabled={!selectedDate}
             className="p-2 rounded-xl text-stone-600 hover:bg-stone-100 hover:text-stone-900 border border-stone-200 transition-colors"
             title="Previous Day"
           >
@@ -135,6 +141,7 @@ export function ReadingsSection({ initialReadings, onDateChange, selectedDate }:
 
           <button
             onClick={() => shiftDate(1)}
+            disabled={!selectedDate}
             className="p-2 rounded-xl text-stone-600 hover:bg-stone-100 hover:text-stone-900 border border-stone-200 transition-colors"
             title="Next Day"
           >
@@ -191,6 +198,15 @@ export function ReadingsSection({ initialReadings, onDateChange, selectedDate }:
 
       {readings ? (
         <>
+          {!readings.dataSource?.isNigeriaSpecific && (
+            <aside className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+              <p className="font-semibold">General Roman Calendar; not Nigeria-specific.</p>
+              <p className="mt-1 text-xs leading-relaxed">
+                Scripture text is shown in the {readings.dataSource?.translationName ?? 'World English Bible'} translation. Local Nigerian diocesan observances may differ; verify with the diocesan Ordo.
+              </p>
+            </aside>
+          )}
+
           {/* Liturgical Day Header Card */}
           <div className="relative overflow-hidden rounded-2xl bg-white border border-stone-200 shadow-sm p-6 sm:p-7">
             <div 
@@ -224,6 +240,12 @@ export function ReadingsSection({ initialReadings, onDateChange, selectedDate }:
               {new Date(readings.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </p>
 
+            {!!readings.otherCelebrations?.length && (
+              <p className="mt-2 text-xs text-stone-600">
+                Other calendar observances: {readings.otherCelebrations.join('; ')}
+              </p>
+            )}
+
             {readings.saintOfTheDay && (
               <div className="mt-4 pt-4 border-t border-stone-100 flex items-start space-x-2 text-xs sm:text-sm text-stone-600">
                 <Sparkles className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
@@ -240,17 +262,10 @@ export function ReadingsSection({ initialReadings, onDateChange, selectedDate }:
 
           {/* Quick Tab Selector for Long Texts */}
           <div className="flex items-center space-x-1 overflow-x-auto pb-1 no-scrollbar border-b border-stone-200">
-            {[
-              { id: 'all', label: 'Continuous View' },
-              { id: 'first', label: 'First Reading' },
-              { id: 'psalm', label: 'Responsorial Psalm' },
-              ...(readings.readings.secondReading ? [{ id: 'second', label: 'Second Reading' }] : []),
-              { id: 'gospel', label: 'Holy Gospel' },
-              { id: 'reflection', label: 'Homily & Reflection' }
-            ].map(tab => (
+            {tabs.map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id)}
                 className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
                   activeTab === tab.id
                     ? 'bg-amber-900 text-amber-50 shadow-xs'
@@ -278,7 +293,7 @@ export function ReadingsSection({ initialReadings, onDateChange, selectedDate }:
                 </div>
                 <div className={`font-serif text-stone-800 ${fontClasses}`}>
                   <p className="italic text-stone-500 text-sm mb-3">A reading from the Book of {readings.readings.firstReading.citation.split(' ')[0]}</p>
-                  <p className="leading-relaxed">{readings.readings.firstReading.text}</p>
+                  <p className="leading-relaxed whitespace-pre-line">{readings.readings.firstReading.text}</p>
                   <p className="mt-4 text-xs font-sans font-semibold text-stone-500 uppercase tracking-wider">The Word of the Lord. <span className="text-amber-900 font-bold">R. Thanks be to God.</span></p>
                 </div>
               </div>
@@ -297,20 +312,10 @@ export function ReadingsSection({ initialReadings, onDateChange, selectedDate }:
                   </span>
                 </div>
                 
-                <div className="bg-amber-50/80 border-l-4 border-amber-800 p-4 rounded-r-xl mb-5">
-                  <span className="text-xs uppercase font-sans font-bold text-amber-900 tracking-wider block mb-1">Response:</span>
-                  <p className="font-serif font-semibold text-base sm:text-lg text-amber-950">
-                    {readings.readings.psalm.response}
-                  </p>
-                </div>
-
                 <div className={`space-y-4 font-serif text-stone-800 ${fontClasses}`}>
                   {readings.readings.psalm.verses.map((strophe, idx) => (
                     <div key={idx} className="space-y-1">
                       <p className="leading-relaxed">{strophe}</p>
-                      <p className="text-xs font-sans text-amber-800 font-semibold italic">
-                        R. {readings.readings.psalm.response}
-                      </p>
                     </div>
                   ))}
                 </div>
@@ -330,7 +335,7 @@ export function ReadingsSection({ initialReadings, onDateChange, selectedDate }:
                   </span>
                 </div>
                 <div className={`font-serif text-stone-800 ${fontClasses}`}>
-                  <p className="leading-relaxed">{readings.readings.secondReading.text}</p>
+                  <p className="leading-relaxed whitespace-pre-line">{readings.readings.secondReading.text}</p>
                   <p className="mt-4 text-xs font-sans font-semibold text-stone-500 uppercase tracking-wider">The Word of the Lord. <span className="text-amber-900 font-bold">R. Thanks be to God.</span></p>
                 </div>
               </div>
@@ -342,13 +347,26 @@ export function ReadingsSection({ initialReadings, onDateChange, selectedDate }:
                 {/* Gospel Acclamation */}
                 <div className="bg-stone-50 rounded-xl p-4 mb-6 border border-stone-200 text-center">
                   <span className="text-xs font-bold uppercase tracking-widest text-amber-800 block mb-1">
-                    Alleluia, Alleluia!
+                    Gospel Acclamation
                   </span>
-                  <p className="font-serif italic text-stone-700 text-sm sm:text-base">
-                    "{readings.readings.gospelAcclamation.verse}"
-                  </p>
-                  <span className="text-xs font-bold uppercase tracking-widest text-amber-800 mt-1 block">
-                    Alleluia!
+                  {readings.readings.gospelAcclamation.verse ? (
+                    <>
+                      <p className="font-serif italic text-stone-700 text-sm sm:text-base">
+                        {readings.readings.gospelAcclamation.verse}
+                      </p>
+                      {readings.readings.gospelAcclamation.citation && (
+                        <p className="mt-1 text-xs text-stone-500">
+                          {readings.readings.gospelAcclamation.citation}
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-sm text-stone-600">
+                      The calendar feed did not provide the verse for this date.
+                    </p>
+                  )}
+                  <span className="text-xs font-bold uppercase tracking-widest text-amber-800 mt-2 block">
+                    {readings.readings.gospelAcclamation.response}
                   </span>
                 </div>
 
@@ -367,11 +385,9 @@ export function ReadingsSection({ initialReadings, onDateChange, selectedDate }:
                     A reading from the Holy Gospel according to {readings.readings.gospel.citation.split(' ')[0]}
                     <span className="block text-amber-900 font-bold mt-0.5">R. Glory to you, O Lord.</span>
                   </p>
-                  
-                  <p className="leading-relaxed first-letter:float-left first-letter:text-4xl first-letter:font-bold first-letter:mr-2 first-letter:text-amber-950">
+                  <p className="leading-relaxed whitespace-pre-line">
                     {readings.readings.gospel.text}
                   </p>
-
                   <p className="mt-5 text-xs font-sans font-semibold text-stone-500 uppercase tracking-wider">
                     The Gospel of the Lord. <span className="text-amber-900 font-bold">R. Praise to you, Lord Jesus Christ.</span>
                   </p>
@@ -383,7 +399,9 @@ export function ReadingsSection({ initialReadings, onDateChange, selectedDate }:
       ) : (
         <div className="text-center py-16 bg-white rounded-2xl border border-stone-200">
           <BookMarked className="w-12 h-12 text-stone-300 mx-auto mb-3 animate-pulse" />
-          <p className="text-stone-500 font-serif">Retrieving liturgical lectionary readings...</p>
+          <p className="text-stone-500 font-serif">
+            {error ? `Unable to retrieve liturgical data: ${error}` : loading ? 'Retrieving liturgical calendar and reading references...' : 'Select a date to view liturgical data.'}
+          </p>
         </div>
       )}
     </div>

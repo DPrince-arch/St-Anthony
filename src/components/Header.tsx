@@ -2,9 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Church, ShieldCheck, Bell } from 'lucide-react';
+import { ShieldCheck, Bell } from 'lucide-react';
 import { DailyLiturgicalReadings } from '@/lib/types';
-import { LITURGICAL_COLORS } from '@/lib/liturgicalData';
+import { LITURGICAL_COLORS } from '@/lib/liturgicalColors';
 
 interface HeaderProps {
   liturgicalData?: DailyLiturgicalReadings | null;
@@ -51,7 +51,10 @@ export function Header({ liturgicalData, activePath = '/' }: HeaderProps) {
         {/* Liturgical Status Banner & Navigation Links */}
         <div className="flex items-center space-x-2 sm:space-x-4">
           {liturgicalData && (
-            <div className="hidden md:flex items-center space-x-2 bg-stone-100/80 px-3 py-1.5 rounded-full border border-stone-200 text-xs text-stone-700">
+            <div
+              className="hidden md:flex items-center space-x-2 bg-stone-100/80 px-3 py-1.5 rounded-full border border-stone-200 text-xs text-stone-700"
+              title="General Roman Calendar; not Nigeria-specific"
+            >
               <span 
                 className="w-2.5 h-2.5 rounded-full shadow-xs" 
                 style={{ backgroundColor: colorInfo?.hex }}
@@ -61,6 +64,7 @@ export function Header({ liturgicalData, activePath = '/' }: HeaderProps) {
               <span className="truncate max-w-[200px] text-stone-600 font-serif italic">
                 {liturgicalData.rank}
               </span>
+              <span className="sr-only">General Roman Calendar; not Nigeria-specific</span>
             </div>
           )}
 

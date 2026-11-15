@@ -1,14 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
 
 interface SplashScreenProps {
   onComplete?: () => void;
   minDisplayTime?: number; // ms
 }
 
-export function SplashScreen({ onComplete, minDisplayTime = 1400 }: SplashScreenProps) {
+export function SplashScreen({ onComplete, minDisplayTime = 350 }: SplashScreenProps) {
   const [isVisible, setIsVisible] = useState(true);
   const [isFading, setIsFading] = useState(false);
 
@@ -16,28 +15,34 @@ export function SplashScreen({ onComplete, minDisplayTime = 1400 }: SplashScreen
     // Check if splash has already been shown in this tab session
     const hasLoaded = sessionStorage.getItem('st_anthony_splash_shown');
     if (hasLoaded) {
-      setIsVisible(false);
-      onComplete?.();
-      return;
+      const timer = setTimeout(() => {
+        setIsVisible(false);
+        onComplete?.();
+      }, 0);
+      return () => clearTimeout(timer);
     }
 
+    let fadeTimer: ReturnType<typeof setTimeout> | undefined;
     const timer = setTimeout(() => {
       setIsFading(true);
-      setTimeout(() => {
+      fadeTimer = setTimeout(() => {
         setIsVisible(false);
         sessionStorage.setItem('st_anthony_splash_shown', 'true');
         onComplete?.();
-      }, 500); // 500ms fade transition
+      }, 200);
     }, minDisplayTime);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (fadeTimer) clearTimeout(fadeTimer);
+    };
   }, [minDisplayTime, onComplete]);
 
   if (!isVisible) return null;
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#1a0f0f] text-amber-50 transition-opacity duration-500 ${
+      className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#1a0f0f] text-amber-50 transition-opacity duration-200 ${
         isFading ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >
@@ -47,7 +52,7 @@ export function SplashScreen({ onComplete, minDisplayTime = 1400 }: SplashScreen
       <div className="relative z-10 flex flex-col items-center max-w-sm px-6 text-center space-y-6 animate-in fade-in zoom-in-95 duration-700">
         {/* St. Anthony Portrait in Halo Ring */}
         <div className="relative group">
-          <div className="absolute -inset-2 bg-gradient-to-r from-amber-500/40 via-yellow-400/50 to-amber-600/40 rounded-3xl blur-md opacity-80 animate-pulse" />
+          <div className="absolute -inset-2 bg-linear-to-r from-amber-500/40 via-yellow-400/50 to-amber-600/40 rounded-3xl blur-md opacity-80 animate-pulse" />
           <div className="relative w-48 h-64 sm:w-56 sm:h-72 rounded-2xl overflow-hidden shadow-2xl ring-2 ring-amber-400/80 bg-stone-900">
             <img
               src="/st-anthony.jpg"
@@ -66,14 +71,16 @@ export function SplashScreen({ onComplete, minDisplayTime = 1400 }: SplashScreen
             St. Anthony
           </h1>
           <p className="font-serif italic text-xs sm:text-sm text-amber-200/80">
-            &ldquo;Si quaeris miracula... Saint Anthony, pray for us&rdquo;
+            &ldquo;Antho ..... Padua &rdquo;<br />
+            &ldquo;Antho ..... Padua &rdquo;<br />
+            &ldquo;Antho ..... One Big, United & Happy Family &rdquo;
           </p>
         </div>
 
         {/* Loading Progress Bar */}
         <div className="w-48 space-y-2 pt-2">
           <div className="h-1 w-full bg-stone-800 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-amber-600 to-amber-300 rounded-full animate-[loading_1.4s_ease-in-out_infinite]" />
+            <div className="h-full bg-linear-to-r from-amber-600 to-amber-300 rounded-full animate-[loading_1.4s_ease-in-out_infinite]" />
           </div>
           <span className="text-[10px] uppercase tracking-widest text-amber-300/60 font-sans block">
             Entering Sanctuary...

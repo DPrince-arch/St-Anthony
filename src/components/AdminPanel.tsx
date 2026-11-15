@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { 
   ShieldCheck, 
-  Lock, 
   LogOut, 
   CheckCircle2, 
   XCircle, 
@@ -11,24 +10,35 @@ import {
   Printer, 
   Plus, 
   Trash2, 
-  Edit3, 
   Eye, 
-  ExternalLink, 
-  Church, 
   Calendar, 
-  User, 
   Phone, 
   FileText, 
-  Megaphone, 
-  Settings,
   AlertCircle,
-  Copy,
-  Check
 } from 'lucide-react';
-import { Booking, Announcement, ParishSettings, BookingStatus } from '@/lib/types';
+import {
+  Booking,
+  Announcement,
+  ParishSettings,
+  BookingPagination,
+  BookingStatus,
+  BookingType
+} from '@/lib/types';
 
 interface AdminPanelProps {
   bookings: Booking[];
+  bookingPagination: BookingPagination;
+  bookingsLoading: boolean;
+  bookingsError: string;
+  onLoadBookings: (
+    page: number,
+    status: 'all' | BookingStatus,
+    type: 'all' | BookingType,
+    passcode: string,
+    requestedDate?: string,
+    massTime?: string,
+    pageSize?: number
+  ) => Promise<void>;
   announcements: Announcement[];
   settings: ParishSettings | null;
   onRefreshData: () => void;
@@ -38,6 +48,10 @@ interface AdminPanelProps {
 
 export function AdminPanel({
   bookings,
+  bookingPagination,
+  bookingsLoading,
+  bookingsError,
+  onLoadBookings,
   announcements,
   settings,
   onRefreshData,
@@ -45,15 +59,19 @@ export function AdminPanel({
   setIsAdminAuthenticated
 }: AdminPanelProps) {
   const [passcode, setPasscode] = useState('');
+  const [adminPasscode, setAdminPasscode] = useState('');
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [adminTab, setAdminTab] = useState<'bookings' | 'altar_sheet' | 'announcements' | 'settings'>('bookings');
 
   // Bookings Filter
-  const [bookingFilterStatus, setBookingFilterStatus] = useState<string>('all');
-  const [bookingFilterType, setBookingFilterType] = useState<string>('all');
+  const [bookingFilterStatus, setBookingFilterStatus] = useState<'all' | BookingStatus>('all');
+  const [bookingFilterType, setBookingFilterType] = useState<'all' | BookingType>('all');
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedReceipt, setSelectedReceipt] = useState<{ image: string; name: string; ref: string } | null>(null);
   const [adminActionLoading, setAdminActionLoading] = useState(false);
+  const [receiptLoadingId, setReceiptLoadingId] = useState<string | null>(null);
+  const [receiptError, setReceiptError] = useState('');
 
   // Altar Sheet Print State
   const [altarDate, setAltarDate] = useState('');
@@ -98,7 +116,10 @@ export function AdminPanel({
       }
 
       setIsAdminAuthenticated(true);
+      setAdminPasscode(passcode);
       setPasscode('');
+      setCurrentPage(1);
+      await onLoadBookings(1, bookingFilterStatus, bookingFilterType, passcode);
     } catch (err: any) {
       setAuthError(err.message || "Failed to verify admin credentials.");
     } finally {
@@ -107,6 +128,8 @@ export function AdminPanel({
   };
 
   const handleLogout = () => {
+    setAdminPasscode('');
+    setSelectedReceipt(null);
     setIsAdminAuthenticated(false);
   };
 
@@ -122,12 +145,15 @@ export function AdminPanel({
 
       const res = await fetch('/api/bookings', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${adminPasscode}` },
         body: JSON.stringify({ id, status: newStatus, adminNotes: adminNote })
       });
 
       if (res.ok) {
         onRefreshData();
+        await onLoadBookings(currentPage, bookingFilterStatus, bookingFilterType, adminPasscode);
+      } else {
+        throw new Error('Failed to update booking');
       }
     } catch (err) {
       console.error(err);
@@ -140,8 +166,18 @@ export function AdminPanel({
   const handleDeleteBooking = async (id: string) => {
     if (!confirm("Are you sure you want to delete this booking record?")) return;
     try {
-      const res = await fetch(`/api/bookings?id=${id}`, { method: 'DELETE' });
-      if (res.ok) onRefreshData();
+      const res = await fetch(`/api/bookings?id=${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${adminPasscode}` }
+      });
+      if (res.ok) {
+        const page = bookings.length === 1 && currentPage > 1 ? currentPage - 1 : currentPage;
+        setCurrentPage(page);
+        onRefreshData();
+        await onLoadBookings(page, bookingFilterStatus, bookingFilterType, adminPasscode);
+      } else {
+        throw new Error('Failed to delete booking');
+      }
     } catch (err) {
       console.error(err);
     }
@@ -202,7 +238,7 @@ export function AdminPanel({
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          adminPasscode: "anthony2025",
+          adminPasscode,
           bankDetails: {
             bankName: editBankName,
             accountName: editAccountName,
@@ -224,12 +260,36 @@ export function AdminPanel({
     }
   };
 
-  // Filtered Bookings
-  const filteredBookings = bookings.filter(b => {
-    const matchesStatus = bookingFilterStatus === 'all' || b.status === bookingFilterStatus;
-    const matchesType = bookingFilterType === 'all' || b.type === bookingFilterType;
-    return matchesStatus && matchesType;
-  });
+  const handleOpenReceipt = async (booking: Booking) => {
+    setReceiptLoadingId(booking.id);
+    setReceiptError('');
+
+    try {
+      const response = await fetch(`/api/bookings/${encodeURIComponent(booking.id)}/receipt`, {
+        headers: { Authorization: `Bearer ${adminPasscode}` }
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to load receipt');
+      }
+      setSelectedReceipt({ image: result.url, name: booking.parishionerName, ref: booking.referenceCode });
+    } catch (err) {
+      setReceiptError(err instanceof Error ? err.message : 'Failed to load receipt');
+    } finally {
+      setReceiptLoadingId(null);
+    }
+  };
+
+  const loadBookings = (page: number, status = bookingFilterStatus, type = bookingFilterType) => {
+    setCurrentPage(page);
+    void onLoadBookings(page, status, type, adminPasscode);
+  };
+
+  const loadAltarBookings = (date: string, massTime: string) => {
+    void onLoadBookings(1, 'approved', 'all', adminPasscode, date, massTime === 'all' ? undefined : massTime, 100);
+  };
+
+  const filteredBookings = bookings;
 
   // Intentions for Altar Sheet
   const altarIntentions = bookings.filter(b => {
@@ -315,14 +375,22 @@ export function AdminPanel({
         {/* Sub-tab pills */}
         <div className="flex items-center space-x-1 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 justify-between md:justify-end">
           {[
-            { id: 'bookings', label: `Bookings (${bookings.length})` },
+            { id: 'bookings', label: `Bookings (${bookingPagination.total})` },
             { id: 'altar_sheet', label: 'Altar Sheet' },
             { id: 'announcements', label: 'Post Notices' },
             { id: 'settings', label: 'Parish Bank & Setup' }
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setAdminTab(tab.id as any)}
+              onClick={() => {
+                const nextTab = tab.id as typeof adminTab;
+                setAdminTab(nextTab);
+                if (nextTab === 'altar_sheet') {
+                  void onLoadBookings(1, 'approved', 'all', adminPasscode, altarDate, altarMassTime === 'all' ? undefined : altarMassTime, 100);
+                } else if (nextTab === 'bookings') {
+                  void onLoadBookings(currentPage, bookingFilterStatus, bookingFilterType, adminPasscode);
+                }
+              }}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
                 adminTab === tab.id
                   ? 'bg-amber-900 text-white shadow-xs'
@@ -349,10 +417,10 @@ export function AdminPanel({
           {/* Metrics summary */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { label: 'Total Bookings', count: bookings.length, color: 'text-stone-900', bg: 'bg-white' },
-              { label: 'Pending Review', count: bookings.filter(b => b.status === 'pending').length, color: 'text-amber-700', bg: 'bg-amber-50/50' },
-              { label: 'Approved & Scheduled', count: bookings.filter(b => b.status === 'approved').length, color: 'text-emerald-700', bg: 'bg-emerald-50/50' },
-              { label: 'Rejected', count: bookings.filter(b => b.status === 'rejected').length, color: 'text-red-700', bg: 'bg-red-50/50' }
+              { label: 'Total Bookings', count: bookingPagination.total, color: 'text-stone-900', bg: 'bg-white' },
+              { label: 'Pending Review', count: bookingPagination.statusCounts.pending, color: 'text-amber-700', bg: 'bg-amber-50/50' },
+              { label: 'Approved & Scheduled', count: bookingPagination.statusCounts.approved, color: 'text-emerald-700', bg: 'bg-emerald-50/50' },
+              { label: 'Rejected', count: bookingPagination.statusCounts.rejected, color: 'text-red-700', bg: 'bg-red-50/50' }
             ].map((m, idx) => (
               <div key={idx} className={`${m.bg} p-4 rounded-2xl border border-stone-200 shadow-xs`}>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 block">{m.label}</span>
@@ -368,7 +436,11 @@ export function AdminPanel({
               {['all', 'pending', 'approved', 'rejected', 'completed'].map(st => (
                 <button
                   key={st}
-                  onClick={() => setBookingFilterStatus(st)}
+                  onClick={() => {
+                    const status = st as 'all' | BookingStatus;
+                    setBookingFilterStatus(status);
+                    loadBookings(1, status);
+                  }}
                   className={`px-3 py-1 rounded-full text-xs font-semibold capitalize transition-colors ${
                     bookingFilterStatus === st
                       ? 'bg-amber-900 text-white'
@@ -384,7 +456,11 @@ export function AdminPanel({
               <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">Type:</span>
               <select
                 value={bookingFilterType}
-                onChange={(e) => setBookingFilterType(e.target.value)}
+                onChange={(e) => {
+                  const type = e.target.value as 'all' | BookingType;
+                  setBookingFilterType(type);
+                  loadBookings(1, bookingFilterStatus, type);
+                }}
                 className="bg-stone-50 border border-stone-200 rounded-xl px-2.5 py-1 text-xs font-medium text-stone-800"
               >
                 <option value="all">All Types</option>
@@ -397,6 +473,14 @@ export function AdminPanel({
 
           {/* Bookings List Cards */}
           <div className="space-y-3">
+            {bookingsError && (
+              <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                {bookingsError}
+              </div>
+            )}
+            {bookingsLoading && (
+              <p className="text-center text-sm text-stone-500">Loading bookings...</p>
+            )}
             {filteredBookings.length > 0 ? (
               filteredBookings.map((b) => (
                 <div 
@@ -502,21 +586,16 @@ export function AdminPanel({
                       <span className="text-[10px] font-bold uppercase text-stone-500 block">
                         Payment Transfer Receipt
                       </span>
-                      {b.receiptImage ? (
+                      {b.hasReceipt ? (
                         <div className="space-y-2">
-                          <img
-                            src={b.receiptImage}
-                            alt="Parishioner Receipt"
-                            onClick={() => setSelectedReceipt({ image: b.receiptImage!, name: b.parishionerName, ref: b.referenceCode })}
-                            className="w-full h-24 object-cover rounded-lg border border-stone-300 cursor-pointer hover:opacity-90 transition-opacity shadow-xs"
-                          />
                           <button
                             type="button"
-                            onClick={() => setSelectedReceipt({ image: b.receiptImage!, name: b.parishionerName, ref: b.referenceCode })}
+                            onClick={() => void handleOpenReceipt(b)}
+                            disabled={receiptLoadingId === b.id}
                             className="w-full py-1 text-xs font-semibold bg-white border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-100 flex items-center justify-center space-x-1"
                           >
                             <Eye className="w-3.5 h-3.5 text-amber-800" />
-                            <span>View Full Receipt</span>
+                            <span>{receiptLoadingId === b.id ? 'Loading receipt...' : 'View Full Receipt'}</span>
                           </button>
                         </div>
                       ) : (
@@ -571,6 +650,34 @@ export function AdminPanel({
               </div>
             )}
           </div>
+          {receiptError && (
+            <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              {receiptError}
+            </div>
+          )}
+          <div className="flex items-center justify-between rounded-xl border border-stone-200 bg-white px-4 py-3">
+            <span className="text-xs text-stone-500">
+              {bookingPagination.total} bookings · Page {currentPage} of {bookingPagination.pages}
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => loadBookings(currentPage - 1)}
+                disabled={bookingsLoading || currentPage <= 1}
+                className="rounded-lg border border-stone-200 px-3 py-1.5 text-xs font-semibold text-stone-700 disabled:opacity-40"
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                onClick={() => loadBookings(currentPage + 1)}
+                disabled={bookingsLoading || currentPage >= bookingPagination.pages}
+                className="rounded-lg border border-stone-200 px-3 py-1.5 text-xs font-semibold text-stone-700 disabled:opacity-40"
+              >
+                Next
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -587,7 +694,10 @@ export function AdminPanel({
                 <input
                   type="date"
                   value={altarDate}
-                  onChange={(e) => setAltarDate(e.target.value)}
+                  onChange={(e) => {
+                    setAltarDate(e.target.value);
+                    loadAltarBookings(e.target.value, altarMassTime);
+                  }}
                   className="bg-stone-50 border border-stone-300 rounded-xl px-3 py-1.5 text-xs font-semibold text-stone-900"
                 />
               </div>
@@ -598,7 +708,10 @@ export function AdminPanel({
                 </label>
                 <select
                   value={altarMassTime}
-                  onChange={(e) => setAltarMassTime(e.target.value)}
+                  onChange={(e) => {
+                    setAltarMassTime(e.target.value);
+                    loadAltarBookings(altarDate, e.target.value);
+                  }}
                   className="bg-stone-50 border border-stone-300 rounded-xl px-3 py-1.5 text-xs font-semibold text-stone-900"
                 >
                   <option value="all">All Scheduled Masses</option>

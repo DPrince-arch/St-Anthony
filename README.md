@@ -7,11 +7,10 @@ A comprehensive, mobile-first Progressive Web Application (PWA) designed for **S
 ## 🌟 Key Features
 
 ### 1. 📖 Daily Liturgical Readings
-- **Liturgical Calendar Engine**: Dynamically calculates season (*Advent, Christmas, Lent, Easter, Ordinary Time*), liturgical color (*Green, Violet, White, Red, Rose*), rank (*Solemnity, Feast, Memorial, Weekday*), and saint/commemoration of the day.
-- **Complete Lectionary Text**: First Reading, Responsorial Psalm with alternating strophes, Second Reading, Gospel Acclamation, and Holy Gospel.
-- **Audio Read-Aloud**: Built-in speech synthesizer allowing parishioners to listen to the scripture readings.
-- **Pastoral Reflection**: Daily homily meditation snippet from the Parish Priest.
-- **Offline Reliability**: 100% offline capable with local liturgical calendar cache.
+- **Liturgical Calendar**: Loads the General Roman Calendar's season, liturgical color, rank, and celebration from a community-maintained calendar API.
+- **Daily Scripture Text**: Loads the day's reading citations and full text in the public-domain World English Bible translation.
+- **Regional limitation**: These sources are not integrated with the Nigerian Catholic calendar. Local Nigerian diocesan observances may differ; verify celebrations with the diocesan Ordo.
+- **Audio Read-Aloud**: Built-in speech synthesizer reads the scripture texts.
 
 ### 2. 🙏 Catholic Prayers & Devotions
 - **The Most Holy Rosary**:
@@ -57,6 +56,22 @@ A comprehensive, mobile-first Progressive Web Application (PWA) designed for **S
 ---
 
 ## 🚀 Running the App Locally
+
+### Persistent Bookings & Receipt Storage
+
+Bookings and receipt images use Supabase. Create a Supabase project, run
+[`supabase/migrations/20261115000000_create_bookings.sql`](./supabase/migrations/20261115000000_create_bookings.sql)
+in its SQL editor, and set the server-only credentials in `.env.local`:
+
+```env
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+```
+
+Keep the service-role key private and never expose it with a `NEXT_PUBLIC_` prefix.
+Before switching an existing installation, run `npm run migrate:bookings` to copy
+legacy records and receipts from `data/bookings.json` into Supabase. The migration
+is safe to rerun and does not modify the source JSON file.
 
 ```bash
 # Navigate to project directory

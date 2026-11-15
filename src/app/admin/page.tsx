@@ -1,46 +1,107 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Church } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { AdminPanel } from '@/components/AdminPanel';
-import { Booking, Announcement, ParishSettings } from '@/lib/types';
+import { Booking, BookingPagination, BookingStatus, BookingType, Announcement, ParishSettings } from '@/lib/types';
+
+const initialPagination: BookingPagination = {
+  page: 1,
+  pageSize: 20,
+  total: 0,
+  pages: 1,
+  statusCounts: { pending: 0, approved: 0, rejected: 0, completed: 0 }
+};
+
+async function fetchParishData() {
+  const [annRes, setRes] = await Promise.all([
+    fetch('/api/announcements'),
+    fetch('/api/settings')
+  ]);
+  if (!annRes.ok || !setRes.ok) throw new Error('Failed to refresh parish data');
+
+  const [annJson, setJson] = await Promise.all([annRes.json(), setRes.json()]);
+  return { annJson, setJson };
+}
 
 export default function AdminPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [bookingPagination, setBookingPagination] = useState(initialPagination);
+  const [bookingsLoading, setBookingsLoading] = useState(false);
+  const [bookingsError, setBookingsError] = useState('');
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [settings, setSettings] = useState<ParishSettings | null>(null);
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+  const bookingRequestId = useRef(0);
 
-  const refreshParishData = async () => {
+  const refreshParishData = useCallback(async () => {
     try {
-      const [annRes, setRes, bookRes] = await Promise.all([
-        fetch('/api/announcements'),
-        fetch('/api/settings'),
-        fetch('/api/bookings')
-      ]);
+      const { annJson, setJson } = await fetchParishData();
+      if (annJson.success) setAnnouncements(annJson.data);
+      if (setJson.success) setSettings(setJson.data);
+    } catch (err) {
+      console.error('Error refreshing parish data:', err);
+    }
+  }, []);
 
-      if (annRes.ok) {
-        const annJson = await annRes.json();
-        if (annJson.success) setAnnouncements(annJson.data);
+  const loadBookings = useCallback(async (
+    page: number,
+    status: 'all' | BookingStatus,
+    type: 'all' | BookingType,
+    passcode: string,
+    requestedDate?: string,
+    massTime?: string,
+    pageSize = initialPagination.pageSize
+  ) => {
+    const requestId = ++bookingRequestId.current;
+    setBookingsLoading(true);
+    setBookingsError('');
+
+    try {
+      const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(pageSize),
+        status,
+        type
+      });
+      if (requestedDate) params.set('requestedDate', requestedDate);
+      if (massTime) params.set('massTime', massTime);
+      const response = await fetch(`/api/bookings?${params}`, {
+        headers: { Authorization: `Bearer ${passcode}` }
+      });
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to load bookings');
       }
 
-      if (setRes.ok) {
-        const setJson = await setRes.json();
-        if (setJson.success) setSettings(setJson.data);
-      }
-
-      if (bookRes.ok) {
-        const bookJson = await bookRes.json();
-        if (bookJson.success) setBookings(bookJson.data);
+      if (requestId === bookingRequestId.current) {
+        setBookings(result.data);
+        setBookingPagination(result.pagination);
       }
     } catch (err) {
-      console.error("Error refreshing parish data:", err);
+      if (requestId === bookingRequestId.current) {
+        setBookingsError(err instanceof Error ? err.message : 'Failed to load bookings');
+      }
+    } finally {
+      if (requestId === bookingRequestId.current) setBookingsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    refreshParishData();
+    let active = true;
+    void fetchParishData()
+      .then(({ annJson, setJson }) => {
+        if (!active) return;
+        if (annJson.success) setAnnouncements(annJson.data);
+        if (setJson.success) setSettings(setJson.data);
+      })
+      .catch((err: unknown) => console.error('Error refreshing parish data:', err));
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   return (
@@ -65,6 +126,10 @@ export default function AdminPage() {
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <AdminPanel
           bookings={bookings}
+          bookingPagination={bookingPagination}
+          bookingsLoading={bookingsLoading}
+          bookingsError={bookingsError}
+          onLoadBookings={loadBookings}
           announcements={announcements}
           settings={settings}
           onRefreshData={refreshParishData}

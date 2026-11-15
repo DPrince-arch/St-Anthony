@@ -42,98 +42,11 @@ const defaultSettings: ParishSettings = {
   adminPasscode: "anthony2027" // Default admin passcode, can be changed in admin settings
 };
 
-// Initial Sample Announcements
-const defaultAnnouncements: Announcement[] = [
-  {
-    id: "ann-1",
-    title: "Solemn Feast of St. Anthony of Padua - 9 Days Novena",
-    category: "liturgy",
-    content: "The annual Novena in honor of our great patron saint, St. Anthony of Padua, commences this Friday. Each evening begins with Exposition of the Blessed Sacrament at 5:30 PM followed by Rosary, Novena prayers, and Holy Mass. Parishioners are encouraged to submit their petition slips at the parish office.",
-    isPinned: true,
-    publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    author: "Parish Pastoral Council"
-  },
-  {
-    id: "ann-2",
-    title: "Notice on Mass Intentions & Stipend Receipts",
-    category: "urgent",
-    content: "Parishioners booking for Sunday Masses are reminded to book at least 48 hours in advance so the parish secretary can print the intentions for Father's altar list. Please ensure you transfer to the official parish account and upload a clear screenshot of your receipt.",
-    isPinned: true,
-    publishedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    author: "Parish Secretariat"
-  },
-  {
-    id: "ann-3",
-    title: "Catholic Youth Organization (CYO) General Meeting",
-    category: "society",
-    content: "All youth and young adults of St. Anthony Parish are invited to the monthly fellowship and planning meeting this Sunday immediately after the 8:30 AM Mass at the Parish Hall. Breakfast will be served.",
-    isPinned: false,
-    publishedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    author: "CYO Executive Committee"
-  },
-  {
-    id: "ann-4",
-    title: "Society of St. Vincent de Paul - Food & Clothing Drive",
-    category: "general",
-    content: "The St. Vincent de Paul society will be collecting non-perishable food items, toiletries, and gently used clothing for underprivileged families in our neighborhood. Donations can be dropped off at the SVDP basket by the church foyer.",
-    isPinned: false,
-    publishedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-    author: "SSVP President"
-  }
-];
+// No default announcements — parish staff add real ones via the Admin panel
+const defaultAnnouncements: Announcement[] = [];
 
-// Initial Sample Bookings
-const defaultBookings: Booking[] = [
-  {
-    id: "book-1",
-    referenceCode: "STA-MASS-8921",
-    type: "mass_intention",
-    parishionerName: "Mrs. Ngozi Okafor",
-    email: "ngozi.okafor@example.com",
-    phone: "+234 802 345 6789",
-    intentionType: "thanksgiving",
-    intentionFor: "Thanksgiving for God's blessings and protection upon the Okafor family on their 20th Wedding Anniversary",
-    requestedDate: new Date().toISOString().split('T')[0],
-    massTime: "08:30 AM (Family Mass)",
-    notes: "Family will be present in church",
-    receiptImage: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='200' viewBox='0 0 400 200'><rect width='100%' height='100%' fill='%23f1f5f9'/><text x='50%' y='40%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%230f172a'>ZENITH BANK TRANSFER RECEIPT</text><text x='50%' y='60%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%23059669'>SUCCESSFUL - NGN 5,000</text><text x='50%' y='80%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='12' fill='%2364748b'>Ref: TXN-9981240192</text></svg>",
-    receiptUploadedAt: new Date().toISOString(),
-    status: "approved",
-    adminNotes: "Stipend verified. Added to 8:30 AM Sunday Mass intentions sheet.",
-    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
-  },
-  {
-    id: "book-2",
-    referenceCode: "STA-MASS-4412",
-    type: "mass_intention",
-    parishionerName: "Michael & Clara Davies",
-    email: "m.davies@example.com",
-    phone: "+234 810 998 1122",
-    intentionType: "repose_soul",
-    intentionFor: "Repose of the soul of late Pa Joseph Davies (RIP). May his soul and the souls of all faithful departed rest in peace.",
-    requestedDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    massTime: "06:30 AM (Morning Mass)",
-    notes: "1 year memorial remembrance",
-    receiptImage: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='200' viewBox='0 0 400 200'><rect width='100%' height='100%' fill='%23f1f5f9'/><text x='50%' y='40%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%230f172a'>ONLINE BANK RECEIPT</text><text x='50%' y='60%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='14' fill='%23059669'>TRANSFER TO ST ANTHONY - NGN 2,000</text><text x='50%' y='80%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='12' fill='%2364748b'>Ref: ZEN-33100293</text></svg>",
-    receiptUploadedAt: new Date().toISOString(),
-    status: "pending",
-    createdAt: new Date().toISOString()
-  },
-  {
-    id: "book-3",
-    referenceCode: "STA-PRIEST-1092",
-    type: "priest_appointment",
-    parishionerName: "Theresa Martins",
-    email: "theresa.m@example.com",
-    phone: "+234 809 777 8899",
-    appointmentReason: "spiritual_direction",
-    requestedDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    preferredTimeSlot: "11:00 AM - 11:30 AM",
-    notes: "Requesting spiritual guidance regarding vocation discernment.",
-    status: "pending",
-    createdAt: new Date().toISOString()
-  }
-];
+// No default bookings — parishioners submit real ones via the booking form
+const defaultBookings: Booking[] = [];
 
 export const StorageService = {
   // Settings

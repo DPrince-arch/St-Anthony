@@ -4,7 +4,6 @@ import { StorageService } from '@/lib/storage';
 export async function GET() {
   try {
     const settings = StorageService.getSettings();
-    // Exclude passcode from public output
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { adminPasscode, ...publicSettings } = settings;
     return NextResponse.json({ success: true, data: publicSettings });
@@ -22,6 +21,7 @@ export async function POST(request: NextRequest) {
     const { passcode } = body;
     const settings = StorageService.getSettings();
 
+    
     if (passcode && passcode === settings.adminPasscode) {
       return NextResponse.json({ success: true, authenticated: true });
     }

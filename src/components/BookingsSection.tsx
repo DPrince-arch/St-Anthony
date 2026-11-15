@@ -8,11 +8,9 @@ import {
   UploadCloud, 
   X, 
   CheckCircle2, 
-  Clock, 
   HeartHandshake, 
   Church, 
   AlertCircle,
-  FileText
 } from 'lucide-react';
 import { BookingType, ParishSettings, Booking } from '@/lib/types';
 
@@ -21,6 +19,20 @@ interface BookingsSectionProps {
   defaultType?: BookingType;
   onBookingSuccess?: (booking: Booking) => void;
 }
+
+const flattenedMassSchedule = [
+  { day: "Sunday", time: "06:30 AM" },
+  { day: "Sunday", time: "09:00 AM" },
+  { day: "Sunday", time: "06:30 PM (Only on last sundays of the month)" },
+  { day: "Monday", time: "06:30 AM" },
+  { day: "Monday", time: "06:30 PM" },
+  { day: "Tuesday", time: "06:30 AM" },
+  { day: "Wednesday", time: "06:30 PM" },
+  { day: "Thursday", time: "06:30 AM" },
+  { day: "Thursday", time: "Followed by Adoration" },
+  { day: "Friday", time: "06:30 AM" },
+  { day: "Saturday", time: "07:00 AM (Memorial of B.V.M)" }
+];
 
 export function BookingsSection({ settings, defaultType = 'mass_intention', onBookingSuccess }: BookingsSectionProps) {
   const [bookingType, setBookingType] = useState<BookingType>(defaultType);
@@ -54,9 +66,22 @@ export function BookingsSection({ settings, defaultType = 'mass_intention', onBo
   const [notes, setNotes] = useState('');
   
   // Receipt Image Upload State
-  const [receiptImage, setReceiptImage] = useState<string | null>(null);
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [receiptFileName, setReceiptFileName] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const receiptPreviewUrl = useRef<string | null>(null);
+
+  React.useEffect(() => () => {
+    if (receiptPreviewUrl.current) URL.revokeObjectURL(receiptPreviewUrl.current);
+  }, []);
+
+  const setReceiptAttachment = (file: File | null) => {
+    if (receiptPreviewUrl.current) URL.revokeObjectURL(receiptPreviewUrl.current);
+    receiptPreviewUrl.current = file ? URL.createObjectURL(file) : null;
+    setReceiptPreview(receiptPreviewUrl.current);
+    setReceiptFile(file);
+  };
 
   const bankDetails = settings?.bankDetails || {
     bankName: "Zenith Bank Plc",
@@ -73,12 +98,12 @@ export function BookingsSection({ settings, defaultType = 'mass_intention', onBo
     }
   };
 
-  // Handle receipt image upload and convert to base64
+  // Keep the receipt as a file so the API can upload it to object storage.
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
       alert("Please upload an image file (PNG, JPG, JPEG, WebP) of your transfer receipt.");
       return;
     }
@@ -89,15 +114,11 @@ export function BookingsSection({ settings, defaultType = 'mass_intention', onBo
     }
 
     setReceiptFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setReceiptImage(event.target?.result as string);
-    };
-    reader.readAsDataURL(file);
+    setReceiptAttachment(file);
   };
 
   const removeReceipt = () => {
-    setReceiptImage(null);
+    setReceiptAttachment(null);
     setReceiptFileName('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -118,7 +139,7 @@ export function BookingsSection({ settings, defaultType = 'mass_intention', onBo
         throw new Error("Please describe the intention for the Mass or Thanksgiving.");
       }
 
-      if ((bookingType === 'mass_intention' || bookingType === 'thanksgiving') && !receiptImage) {
+      if ((bookingType === 'mass_intention' || bookingType === 'thanksgiving') && !receiptFile) {
         throw new Error("Please upload a screenshot or photo of your transfer receipt before submitting.");
       }
 
@@ -133,14 +154,18 @@ export function BookingsSection({ settings, defaultType = 'mass_intention', onBo
         intentionFor: bookingType !== 'priest_appointment' ? intentionFor : undefined,
         appointmentReason: bookingType === 'priest_appointment' ? appointmentReason : undefined,
         preferredTimeSlot: bookingType === 'priest_appointment' ? preferredTimeSlot : undefined,
-        notes,
-        receiptImage: receiptImage || undefined
+        notes
       };
+
+      const formData = new FormData();
+      Object.entries(payload).forEach(([key, value]) => {
+        if (value !== undefined) formData.append(key, value);
+      });
+      if (receiptFile) formData.append('receipt', receiptFile);
 
       const res = await fetch('/api/bookings', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: formData
       });
 
       const data = await res.json();
@@ -197,7 +222,7 @@ export function BookingsSection({ settings, defaultType = 'mass_intention', onBo
 
       {/* CHURCH BANK DETAILS CARD (For Mass Intentions & Thanksgiving) */}
       {bookingType !== 'priest_appointment' && (
-        <div className="bg-gradient-to-br from-amber-900 via-amber-950 to-stone-900 rounded-2xl p-6 sm:p-7 text-white shadow-md relative overflow-hidden">
+        <div className="bg-linear-to-br from-amber-900 via-amber-950 to-stone-900 rounded-2xl p-6 sm:p-7 text-white shadow-md relative overflow-hidden">
           {/* Subtle gold watermark */}
           <Church className="absolute -right-8 -bottom-8 w-44 h-44 text-white/5 pointer-events-none" />
 
@@ -364,11 +389,11 @@ export function BookingsSection({ settings, defaultType = 'mass_intention', onBo
                   onChange={(e) => setMassTime(e.target.value)}
                   className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3.5 py-2 text-sm text-stone-900 focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
                 >
-                  <option value="06:30 AM (Dawn Mass)">06:30 AM (Morning Dawn Mass)</option>
-                  <option value="08:30 AM (Family Mass)">08:30 AM (Family & Children Mass)</option>
-                  <option value="10:30 AM (High Mass)">10:30 AM (High / Choral Mass)</option>
-                  <option value="12:00 PM (Midday Mass)">12:00 PM (Midday Weekday Mass)</option>
-                  <option value="06:00 PM (Evening Mass)">06:00 PM (Evening / Youth Mass)</option>
+                  {flattenedMassSchedule.map((schedule, index) => (
+                    <option key={index} value={`${schedule.day}, ${schedule.time}`}>
+                      {schedule.day}, {schedule.time}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -396,7 +421,7 @@ export function BookingsSection({ settings, defaultType = 'mass_intention', onBo
                 Please attach the screenshot or photo of your payment to the parish account above.
               </p>
 
-              {!receiptImage ? (
+              {!receiptFile ? (
                 <div 
                   onClick={() => fileInputRef.current?.click()}
                   className="border-2 border-dashed border-stone-300 hover:border-amber-700 bg-stone-50 hover:bg-amber-50/40 rounded-2xl p-6 text-center cursor-pointer transition-all group"
@@ -420,11 +445,13 @@ export function BookingsSection({ settings, defaultType = 'mass_intention', onBo
                 <div className="relative rounded-2xl border border-stone-200 bg-stone-50 p-3 flex items-center justify-between">
                   <div className="flex items-center space-x-3 overflow-hidden">
                     {/* Thumbnail */}
-                    <img
-                      src={receiptImage}
-                      alt="Uploaded transfer receipt"
-                      className="w-14 h-14 object-cover rounded-lg border border-stone-200 shrink-0"
-                    />
+                    {receiptPreview && (
+                      <img
+                        src={receiptPreview}
+                        alt="Uploaded transfer receipt"
+                        className="w-14 h-14 object-cover rounded-lg border border-stone-200 shrink-0"
+                      />
+                    )}
                     <div className="overflow-hidden">
                       <p className="text-xs font-semibold text-stone-800 truncate">
                         {receiptFileName || "Transfer_Receipt.jpg"}
