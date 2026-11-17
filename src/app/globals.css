@@ -35,3 +35,20 @@ body {
   50% { transform: translateX(50%); }
   100% { transform: translateX(200%); }
 }
+
+/* Splash screen: fades out by CSS alone (no JavaScript needed). Timing must
+   match SPLASH_TOTAL_MS in SplashScreen.tsx. */
+.splash-screen {
+  animation: splash-out 200ms ease-out 350ms forwards;
+}
+@keyframes splash-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+/* Already shown in this tab session (set by SplashScreen) */
+html[data-splash-seen] .splash-screen {
+  display: none;
+}

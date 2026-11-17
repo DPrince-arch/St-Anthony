@@ -1,46 +1,42 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 
-const MIN_DISPLAY_TIME_MS = 350;
+const SHOWN_KEY = 'st_anthony_splash_shown';
+// Must match the animation delay + duration of .splash-screen in globals.css.
+const SPLASH_TOTAL_MS = 550;
 
+// Runs while the HTML is parsed, before first paint: hide the splash if it was
+// already shown in this tab session (e.g. on a refresh of the home page).
+const SKIP_IF_SEEN = `try{if(sessionStorage.getItem('${SHOWN_KEY}'))document.documentElement.dataset.splashSeen=''}catch(e){}`;
+
+/**
+ * The fade-out is pure CSS (.splash-screen in globals.css), so it doesn't wait
+ * for JavaScript to load. This component only remembers that it was shown.
+ */
 export function SplashScreen() {
-  const [isVisible, setIsVisible] = useState(true);
-  const [isFading, setIsFading] = useState(false);
-
   useEffect(() => {
-    // Check if splash has already been shown in this tab session
-    const hasLoaded = sessionStorage.getItem('st_anthony_splash_shown');
-    if (hasLoaded) {
-      const timer = setTimeout(() => {
-        setIsVisible(false);
-      }, 0);
-      return () => clearTimeout(timer);
+    try {
+      sessionStorage.setItem(SHOWN_KEY, 'true');
+    } catch {
+      // Storage unavailable (e.g. private mode): the splash just shows again next time.
     }
-
-    let fadeTimer: ReturnType<typeof setTimeout> | undefined;
+    // Once it has faded, also hide it for client-side navigations back to the home page.
     const timer = setTimeout(() => {
-      setIsFading(true);
-      fadeTimer = setTimeout(() => {
-        setIsVisible(false);
-        sessionStorage.setItem('st_anthony_splash_shown', 'true');
-      }, 200);
-    }, MIN_DISPLAY_TIME_MS);
-
-    return () => {
-      clearTimeout(timer);
-      if (fadeTimer) clearTimeout(fadeTimer);
-    };
+      document.documentElement.dataset.splashSeen = '';
+    }, SPLASH_TOTAL_MS);
+    return () => clearTimeout(timer);
   }, []);
 
-  if (!isVisible) return null;
-
   return (
-    <div
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#1a0f0f] text-amber-50 transition-opacity duration-200 ${
-        isFading ? 'opacity-0 pointer-events-none' : 'opacity-100'
-      }`}
-    >
+    <>
+    <script
+      // Executes only in the server-rendered HTML; on the client React renders it as inert text/plain.
+      type={typeof window === 'undefined' ? 'text/javascript' : 'text/plain'}
+      suppressHydrationWarning
+      dangerouslySetInnerHTML={{ __html: SKIP_IF_SEEN }}
+    />
+    <div className="splash-screen fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#1a0f0f] text-amber-50">
       {/* Background warm radiant glow */}
       <div className="absolute inset-0 bg-radial from-amber-900/30 via-[#180a0a]/90 to-[#0e0505] pointer-events-none" />
 
@@ -83,5 +79,6 @@ export function SplashScreen() {
         </div>
       </div>
     </div>
+    </>
   );
 }
