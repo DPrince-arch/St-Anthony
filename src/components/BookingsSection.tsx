@@ -13,6 +13,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { BookingType, PublicSettings, Booking } from '@/lib/types';
+import { addDays, todayInParish } from '@/lib/dates';
 
 interface BookingsSectionProps {
   settings: PublicSettings | null;
@@ -50,11 +51,7 @@ export function BookingsSection({ settings, defaultType = 'mass_intention' }: Bo
   const [parishionerName, setParishionerName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [requestedDate, setRequestedDate] = useState(() => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return tomorrow.toISOString().split('T')[0];
-  });
+  const [requestedDate, setRequestedDate] = useState(() => addDays(todayInParish(), 1));
   const [massTime, setMassTime] = useState('06:30 AM (Dawn Mass)');
   const [intentionType, setIntentionType] = useState<'thanksgiving' | 'repose_soul' | 'birthday' | 'healing' | 'anniversary' | 'special_intention'>('thanksgiving');
   const [intentionFor, setIntentionFor] = useState('');
@@ -369,7 +366,7 @@ export function BookingsSection({ settings, defaultType = 'mass_intention' }: Bo
                 <input
                   type="date"
                   required
-                  min={new Date().toISOString().split('T')[0]}
+                  min={todayInParish()}
                   value={requestedDate}
                   onChange={(e) => setRequestedDate(e.target.value)}
                   className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3.5 py-2 text-sm text-stone-900 focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
@@ -501,7 +498,7 @@ export function BookingsSection({ settings, defaultType = 'mass_intention' }: Bo
                 <input
                   type="date"
                   required
-                  min={new Date().toISOString().split('T')[0]}
+                  min={todayInParish()}
                   value={requestedDate}
                   onChange={(e) => setRequestedDate(e.target.value)}
                   className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3.5 py-2 text-sm text-stone-900 focus:ring-2 focus:ring-amber-500 focus:outline-hidden"

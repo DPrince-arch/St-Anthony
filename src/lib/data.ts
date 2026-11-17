@@ -115,10 +115,5 @@ export function deleteAnnouncement(id: string): boolean {
 
 // Liturgical readings
 
-/** Today's date (UTC) as YYYY-MM-DD, matching what the browser used before. */
-export function todayIsoDate(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
 /** Readings (or an error message) for a date. Cached across requests (see liturgicalData.ts) and deduped within a request. */
 export const getReadings = cache(getLiturgicalReadingsForDate);

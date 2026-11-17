@@ -16,6 +16,7 @@ import {
   Check
 } from 'lucide-react';
 import { DailyLiturgicalReadings } from '@/lib/types';
+import { addDays, todayInParish } from '@/lib/dates';
 import { LITURGICAL_COLORS } from '@/lib/liturgicalColors';
 
 interface ReadingsSectionProps {
@@ -49,15 +50,11 @@ export function ReadingsSection({ readings: loadedReadings, selectedDate: loaded
 
   // Adjust date by offset
   const shiftDate = (days: number) => {
-    const current = new Date(selectedDate);
-    current.setDate(current.getDate() + days);
-    const newDateStr = current.toISOString().split('T')[0];
-    onDateChange(newDateStr);
+    onDateChange(addDays(selectedDate, days));
   };
 
   const setToday = () => {
-    const todayStr = new Date().toISOString().split('T')[0];
-    onDateChange(todayStr);
+    onDateChange(todayInParish());
   };
 
   // Web Speech API Read Aloud

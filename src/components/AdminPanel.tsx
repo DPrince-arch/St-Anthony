@@ -25,6 +25,7 @@ import {
   BookingStatus,
   BookingType
 } from '@/lib/types';
+import { todayInParish } from '@/lib/dates';
 
 const BOOKINGS_PAGE_SIZE = 20;
 
@@ -107,7 +108,7 @@ export function AdminPanel({ announcements, settings }: AdminPanelProps) {
   const [receiptError, setReceiptError] = useState('');
 
   // Altar Sheet Print State
-  const [altarDate, setAltarDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [altarDate, setAltarDate] = useState(todayInParish);
   const [altarMassTime, setAltarMassTime] = useState<string>('all');
 
   // New Announcement Form State

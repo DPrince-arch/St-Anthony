@@ -5,7 +5,8 @@ import { ArrowLeft } from 'lucide-react';
 import { Header } from './Header';
 import { BottomNav } from './BottomNav';
 import { SplashScreen } from './SplashScreen';
-import { getAnnouncements, getReadings, todayIsoDate } from '@/lib/data';
+import { getAnnouncements, getReadings } from '@/lib/data';
+import { todayInParish } from '@/lib/dates';
 import { isValidIsoDate } from '@/lib/liturgicalData';
 
 interface PageShellProps {
@@ -71,7 +72,7 @@ export function PageShell({ activePath, children, footerTagline, showNoticesBadg
 
 async function LiturgicalHeader({ activePath, date }: { activePath: string; date?: Promise<string | undefined> }) {
   await connection();
-  const day = (await date) ?? todayIsoDate();
+  const day = (await date) ?? todayInParish();
   const readings = isValidIsoDate(day) ? (await getReadings(day)).readings : null;
   return <Header liturgicalData={readings} activePath={activePath} />;
 }

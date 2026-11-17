@@ -2,7 +2,8 @@ import { Suspense } from 'react';
 import { connection } from 'next/server';
 import { PageShell } from '@/components/PageShell';
 import { ReadingsSection } from '@/components/ReadingsSection';
-import { getReadings, todayIsoDate } from '@/lib/data';
+import { getReadings } from '@/lib/data';
+import { todayInParish } from '@/lib/dates';
 import { isValidIsoDate } from '@/lib/liturgicalData';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -22,7 +23,7 @@ export default function ReadingsPage({ searchParams }: { searchParams: SearchPar
 
 async function Readings({ date }: { date: Promise<string | undefined> }) {
   await connection();
-  const selectedDate = (await date) ?? todayIsoDate();
+  const selectedDate = (await date) ?? todayInParish();
 
   if (!selectedDate) {
     return <ReadingsSection readings={null} selectedDate="" />;
