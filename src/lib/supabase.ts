@@ -1,9 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
-import type { BookingStatus, BookingType } from './types';
+import type { Booking, BookingStatus, BookingType } from './types';
 
 export const RECEIPTS_BUCKET = 'booking-receipts';
 
-type BookingDatabaseRow = {
+export type BookingRow = {
   id: string;
   reference_code: string;
   type: BookingType;
@@ -24,7 +24,7 @@ type BookingDatabaseRow = {
   created_at: string;
 };
 
-type BookingInsert = Omit<BookingDatabaseRow, 'id' | 'created_at' | 'status'> & {
+type BookingInsert = Omit<BookingRow, 'id' | 'created_at' | 'status'> & {
   id?: string;
   created_at?: string;
   status?: BookingStatus;
@@ -34,7 +34,7 @@ interface Database {
   public: {
     Tables: {
       bookings: {
-        Row: BookingDatabaseRow;
+        Row: BookingRow;
         Insert: BookingInsert;
         Update: Partial<BookingInsert>;
         Relationships: [];
@@ -70,4 +70,27 @@ export function getSupabaseAdmin() {
   });
 
   return adminClient;
+}
+
+export function toBooking(row: BookingRow): Booking {
+  return {
+    id: row.id,
+    referenceCode: row.reference_code,
+    type: row.type,
+    parishionerName: row.parishioner_name,
+    email: row.email,
+    phone: row.phone,
+    intentionType: (row.intention_type ?? undefined) as Booking['intentionType'],
+    intentionFor: row.intention_for ?? undefined,
+    requestedDate: row.requested_date,
+    massTime: row.mass_time ?? undefined,
+    appointmentReason: (row.appointment_reason ?? undefined) as Booking['appointmentReason'],
+    preferredTimeSlot: row.preferred_time_slot ?? undefined,
+    notes: row.notes ?? undefined,
+    hasReceipt: Boolean(row.receipt_path),
+    receiptUploadedAt: row.receipt_uploaded_at ?? undefined,
+    status: row.status,
+    adminNotes: row.admin_notes ?? undefined,
+    createdAt: row.created_at
+  };
 }

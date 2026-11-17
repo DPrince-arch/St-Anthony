@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { StorageService } from '@/lib/storage';
+import { createAnnouncement, deleteAnnouncement, getAnnouncements } from '@/lib/data';
+
+function errorResponse(error: unknown) {
+  return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
+}
 
 export async function GET() {
   try {
-    const announcements = StorageService.getAnnouncements();
-    return NextResponse.json({ success: true, data: announcements });
+    return NextResponse.json({ success: true, data: getAnnouncements() });
   } catch (error) {
-    return NextResponse.json(
-      { success: false, error: (error as Error).message },
-      { status: 500 }
-    );
+    return errorResponse(error);
   }
 }
 
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const created = StorageService.createAnnouncement({
+    const created = createAnnouncement({
       title: body.title.trim(),
       category: body.category,
       content: body.content.trim(),
@@ -35,38 +35,23 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, data: created }, { status: 201 });
   } catch (error) {
-    return NextResponse.json(
-      { success: false, error: (error as Error).message },
-      { status: 500 }
-    );
+    return errorResponse(error);
   }
 }
 
 export async function DELETE(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
+    const id = new URL(request.url).searchParams.get('id');
     if (!id) {
-      return NextResponse.json(
-        { success: false, error: "Announcement ID is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: "Announcement ID is required" }, { status: 400 });
     }
 
-    const deleted = StorageService.deleteAnnouncement(id);
-    if (!deleted) {
-      return NextResponse.json(
-        { success: false, error: "Announcement not found" },
-        { status: 404 }
-      );
+    if (!deleteAnnouncement(id)) {
+      return NextResponse.json({ success: false, error: "Announcement not found" }, { status: 404 });
     }
 
     return NextResponse.json({ success: true, message: "Announcement deleted" });
   } catch (error) {
-    return NextResponse.json(
-      { success: false, error: (error as Error).message },
-      { status: 500 }
-    );
+    return errorResponse(error);
   }
 }

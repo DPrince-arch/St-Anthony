@@ -1,29 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
-import { StorageService } from '@/lib/storage';
-import { getSupabaseAdmin, RECEIPTS_BUCKET } from '@/lib/supabase';
-import { Booking, BookingStatus, BookingType } from '@/lib/types';
-
-interface BookingRow {
-  id: string;
-  reference_code: string;
-  type: BookingType;
-  parishioner_name: string;
-  email: string;
-  phone: string;
-  intention_type: Booking['intentionType'] | null;
-  intention_for: string | null;
-  requested_date: string;
-  mass_time: string | null;
-  appointment_reason: Booking['appointmentReason'] | null;
-  preferred_time_slot: string | null;
-  notes: string | null;
-  receipt_path: string | null;
-  receipt_uploaded_at: string | null;
-  status: BookingStatus;
-  admin_notes: string | null;
-  created_at: string;
-}
+import { isAdminRequest } from '@/lib/data';
+import { getSupabaseAdmin, RECEIPTS_BUCKET, toBooking } from '@/lib/supabase';
+import { BookingStatus, BookingType } from '@/lib/types';
 
 const bookingStatuses: BookingStatus[] = ['pending', 'approved', 'rejected', 'completed'];
 const bookingTypes: BookingType[] = ['mass_intention', 'thanksgiving', 'priest_appointment'];
@@ -33,35 +12,6 @@ const emptyStatusCounts: Record<BookingStatus, number> = {
   rejected: 0,
   completed: 0
 };
-
-function isAdminRequest(request: NextRequest) {
-  const authorization = request.headers.get('authorization');
-  const passcode = authorization?.startsWith('Bearer ') ? authorization.slice(7) : '';
-  return Boolean(passcode && passcode === StorageService.getSettings().adminPasscode);
-}
-
-function toBooking(row: BookingRow): Booking {
-  return {
-    id: row.id,
-    referenceCode: row.reference_code,
-    type: row.type,
-    parishionerName: row.parishioner_name,
-    email: row.email,
-    phone: row.phone,
-    intentionType: row.intention_type ?? undefined,
-    intentionFor: row.intention_for ?? undefined,
-    requestedDate: row.requested_date,
-    massTime: row.mass_time ?? undefined,
-    appointmentReason: row.appointment_reason ?? undefined,
-    preferredTimeSlot: row.preferred_time_slot ?? undefined,
-    notes: row.notes ?? undefined,
-    hasReceipt: Boolean(row.receipt_path),
-    receiptUploadedAt: row.receipt_uploaded_at ?? undefined,
-    status: row.status,
-    adminNotes: row.admin_notes ?? undefined,
-    createdAt: row.created_at
-  };
-}
 
 function errorResponse(error: unknown) {
   const message = error instanceof Error ? error.message : 'Unexpected server error';
@@ -124,7 +74,7 @@ export async function GET(request: NextRequest) {
     const total = count ?? 0;
     return NextResponse.json({
       success: true,
-      data: (data as BookingRow[]).map(toBooking),
+      data: data.map(toBooking),
       pagination: {
         page,
         pageSize,
@@ -225,7 +175,7 @@ export async function POST(request: NextRequest) {
       throw error;
     }
 
-    return NextResponse.json({ success: true, data: toBooking(data as BookingRow) }, { status: 201 });
+    return NextResponse.json({ success: true, data: toBooking(data) }, { status: 201 });
   } catch (error) {
     return errorResponse(error);
   }
@@ -262,7 +212,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Booking not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, data: toBooking(data as BookingRow) });
+    return NextResponse.json({ success: true, data: toBooking(data) });
   } catch (error) {
     return errorResponse(error);
   }

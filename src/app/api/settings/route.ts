@@ -1,65 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { StorageService } from '@/lib/storage';
+import { getPublicSettings, isAdminPasscode, updateSettings } from '@/lib/data';
+
+function errorResponse(error: unknown) {
+  return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
+}
 
 export async function GET() {
   try {
-    const settings = StorageService.getSettings();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { adminPasscode, ...publicSettings } = settings;
-    return NextResponse.json({ success: true, data: publicSettings });
+    return NextResponse.json({ success: true, data: getPublicSettings() });
   } catch (error) {
-    return NextResponse.json(
-      { success: false, error: (error as Error).message },
-      { status: 500 }
-    );
+    return errorResponse(error);
   }
 }
 
+// Admin login: checks the passcode.
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { passcode } = body;
-    const settings = StorageService.getSettings();
-
-    
-    if (passcode && passcode === settings.adminPasscode) {
+    const { passcode } = await request.json();
+    if (isAdminPasscode(passcode)) {
       return NextResponse.json({ success: true, authenticated: true });
     }
-
     return NextResponse.json(
       { success: false, authenticated: false, error: "Invalid admin passcode" },
       { status: 401 }
     );
   } catch (error) {
-    return NextResponse.json(
-      { success: false, error: (error as Error).message },
-      { status: 500 }
-    );
+    return errorResponse(error);
   }
 }
 
 export async function PUT(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { adminPasscode, ...newSettings } = body;
-    const currentSettings = StorageService.getSettings();
-
-    // Verify passcode before allowing modification
-    if (adminPasscode !== currentSettings.adminPasscode) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized: Invalid passcode" },
-        { status: 401 }
-      );
+    const { adminPasscode, ...changes } = await request.json();
+    if (!isAdminPasscode(adminPasscode)) {
+      return NextResponse.json({ success: false, error: "Unauthorized: Invalid passcode" }, { status: 401 });
     }
-
-    const updated = StorageService.updateSettings(newSettings);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { adminPasscode: _, ...safeUpdated } = updated;
-    return NextResponse.json({ success: true, data: safeUpdated });
+    return NextResponse.json({ success: true, data: updateSettings(changes) });
   } catch (error) {
-    return NextResponse.json(
-      { success: false, error: (error as Error).message },
-      { status: 500 }
-    );
+    return errorResponse(error);
   }
 }

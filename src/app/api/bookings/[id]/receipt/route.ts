@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { StorageService } from '@/lib/storage';
+import { isAdminRequest } from '@/lib/data';
 import { getSupabaseAdmin, RECEIPTS_BUCKET } from '@/lib/supabase';
 
 export async function GET(
@@ -7,9 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const authorization = request.headers.get('authorization');
-    const passcode = authorization?.startsWith('Bearer ') ? authorization.slice(7) : '';
-    if (!passcode || passcode !== StorageService.getSettings().adminPasscode) {
+    if (!isAdminRequest(request)) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
