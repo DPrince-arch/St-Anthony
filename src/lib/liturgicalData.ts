@@ -108,7 +108,60 @@ function getCitation(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-async function fetchScripturePart(reference: string): Promise<ScriptureResponse> {
+interface Passage {
+  text: string;
+  verses: string[];
+}
+
+// bible-api.com allows 15 requests per 30 seconds per IP. Requests wait for a free
+// slot in a rolling window instead of being sent and rejected.
+const SCRIPTURE_RATE_LIMIT = 14;
+const SCRIPTURE_RATE_WINDOW_MS = 30_000;
+const scriptureRequestTimes: number[] = [];
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+async function waitForScriptureSlot() {
+  for (;;) {
+    const now = Date.now();
+    while (scriptureRequestTimes.length > 0 && now - scriptureRequestTimes[0] >= SCRIPTURE_RATE_WINDOW_MS) {
+      scriptureRequestTimes.shift();
+    }
+    if (scriptureRequestTimes.length < SCRIPTURE_RATE_LIMIT) {
+      scriptureRequestTimes.push(now);
+      return;
+    }
+    await sleep(SCRIPTURE_RATE_WINDOW_MS - (now - scriptureRequestTimes[0]) + 50);
+  }
+}
+
+async function requestScripture(reference: string, isRetry = false): Promise<ScriptureResponse> {
+  await waitForScriptureSlot();
+  const response = await fetch(
+    `${SCRIPTURE_API}/${encodeURIComponent(reference)}?translation=${SCRIPTURE_TRANSLATION}`
+  );
+  if (response.status === 429 && !isRetry) {
+    // Rate limited anyway (e.g. after a restart): wait as asked (5 s default, at most 15 s), then retry once.
+    const retryAfterSeconds = Number(response.headers.get('retry-after'));
+    await sleep(Math.min(retryAfterSeconds > 0 ? retryAfterSeconds : 5, 15) * 1000);
+    return requestScripture(reference, true);
+  }
+  if (!response.ok) {
+    throw new Error(`Scripture text service could not resolve "${reference}" (HTTP ${response.status}).`);
+  }
+
+  const scripture = await response.json() as ScriptureResponse;
+  if (!scripture.text?.trim() || scripture.translation_name !== 'World English Bible') {
+    throw new Error(`Scripture text service returned no World English Bible text for "${reference}".`);
+  }
+  return scripture;
+}
+
+// Scripture text never changes, so each passage is cached for as long as possible and
+// shared across dates. Failures are returned (not thrown) so the message survives the
+// cache boundary, and are cached only briefly.
+async function fetchScripturePart(reference: string): Promise<Passage | { error: string }> {
+  'use cache';
   const normalizedReference = reference
     .replace(/\u00a0/g, ' ')
     .replace(/[–—]/g, '-')
@@ -117,21 +170,20 @@ async function fetchScripturePart(reference: string): Promise<ScriptureResponse>
     .replace(/\s+and\s+/gi, ',')
     .replace(/^cf\.?\s*/i, '')
     .trim();
-  const response = await fetch(
-    `${SCRIPTURE_API}/${encodeURIComponent(normalizedReference)}?translation=${SCRIPTURE_TRANSLATION}`
-  );
-  if (!response.ok) {
-    throw new Error(`Scripture text service could not resolve "${normalizedReference}" (HTTP ${response.status}).`);
+  try {
+    const scripture = await requestScripture(normalizedReference);
+    cacheLife('max');
+    return {
+      text: scripture.text?.trim() ?? '',
+      verses: scripture.verses?.map(verse => verse.text.trim()).filter(Boolean) ?? []
+    };
+  } catch (error) {
+    cacheLife('seconds');
+    return { error: errorMessage(error) };
   }
-
-  const scripture = await response.json() as ScriptureResponse;
-  if (!scripture.text?.trim() || scripture.translation_name !== 'World English Bible') {
-    throw new Error(`Scripture text service returned no World English Bible text for "${normalizedReference}".`);
-  }
-  return scripture;
 }
 
-async function fetchScripture(citation: string): Promise<{ text: string; verses: string[] }> {
+async function fetchScripture(citation: string): Promise<Passage> {
   const alternatives = citation.split(/\s+or\s+/i).map(option => option.trim()).filter(Boolean);
   const passages = await Promise.all(alternatives.map(async alternative => {
     const parts = alternative.split(';').map(part => part.trim()).filter(Boolean);
@@ -141,9 +193,13 @@ async function fetchScripture(citation: string): Promise<{ text: string; verses:
       return previousBook ? `${previousBook} ${part}` : part;
     });
     const results = await Promise.all(expandedParts.map(fetchScripturePart));
+    const passageParts = results.map(result => {
+      if ('error' in result) throw new Error(result.error);
+      return result;
+    });
     return {
-      text: results.map(result => result.text?.trim()).filter(Boolean).join('\n\n'),
-      verses: results.flatMap(result => result.verses?.map(verse => verse.text.trim()).filter(Boolean) ?? [])
+      text: passageParts.map(part => part.text).filter(Boolean).join('\n\n'),
+      verses: passageParts.flatMap(part => part.verses)
     };
   }));
   return {
