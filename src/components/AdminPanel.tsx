@@ -289,8 +289,6 @@ export function AdminPanel({
     void onLoadBookings(1, 'approved', 'all', adminPasscode, date, massTime === 'all' ? undefined : massTime, 100);
   };
 
-  const filteredBookings = bookings;
-
   // Intentions for Altar Sheet
   const altarIntentions = bookings.filter(b => {
     const isApproved = b.status === 'approved';
@@ -481,8 +479,8 @@ export function AdminPanel({
             {bookingsLoading && (
               <p className="text-center text-sm text-stone-500">Loading bookings...</p>
             )}
-            {filteredBookings.length > 0 ? (
-              filteredBookings.map((b) => (
+            {bookings.length > 0 ? (
+              bookings.map((b) => (
                 <div 
                   key={b.id} 
                   className={`bg-white rounded-2xl p-5 border transition-all shadow-xs space-y-4 ${

@@ -42,35 +42,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function PATCH(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { id, ...updates } = body;
-
-    if (!id) {
-      return NextResponse.json(
-        { success: false, error: "Announcement ID is required" },
-        { status: 400 }
-      );
-    }
-
-    const updated = StorageService.updateAnnouncement(id, updates);
-    if (!updated) {
-      return NextResponse.json(
-        { success: false, error: "Announcement not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ success: true, data: updated });
-  } catch (error) {
-    return NextResponse.json(
-      { success: false, error: (error as Error).message },
-      { status: 500 }
-    );
-  }
-}
-
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

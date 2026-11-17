@@ -69,9 +69,6 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
 Keep the service-role key private and never expose it with a `NEXT_PUBLIC_` prefix.
-Before switching an existing installation, run `npm run migrate:bookings` to copy
-legacy records and receipts from `data/bookings.json` into Supabase. The migration
-is safe to rerun and does not modify the source JSON file.
 
 ```bash
 # Navigate to project directory

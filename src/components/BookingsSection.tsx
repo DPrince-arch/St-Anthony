@@ -17,7 +17,6 @@ import { BookingType, ParishSettings, Booking } from '@/lib/types';
 interface BookingsSectionProps {
   settings: ParishSettings | null;
   defaultType?: BookingType;
-  onBookingSuccess?: (booking: Booking) => void;
 }
 
 const flattenedMassSchedule = [
@@ -34,7 +33,7 @@ const flattenedMassSchedule = [
   { day: "Saturday", time: "07:00 AM (Memorial of B.V.M)" }
 ];
 
-export function BookingsSection({ settings, defaultType = 'mass_intention', onBookingSuccess }: BookingsSectionProps) {
+export function BookingsSection({ settings, defaultType = 'mass_intention' }: BookingsSectionProps) {
   const [bookingType, setBookingType] = useState<BookingType>(defaultType);
 
   React.useEffect(() => {
@@ -174,7 +173,6 @@ export function BookingsSection({ settings, defaultType = 'mass_intention', onBo
       }
 
       setSuccessBooking(data.data);
-      onBookingSuccess?.(data.data);
 
       // Reset fields
       setIntentionFor('');

@@ -1,10 +1,9 @@
 import fs from 'fs';
 import path from 'path';
-import { Booking, Announcement, ParishSettings } from './types';
+import { Announcement, ParishSettings } from './types';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 
-const BOOKINGS_FILE = path.join(DATA_DIR, 'bookings.json');
 const ANNOUNCEMENTS_FILE = path.join(DATA_DIR, 'announcements.json');
 const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
 
@@ -44,9 +43,6 @@ const defaultSettings: ParishSettings = {
 
 // No default announcements — parish staff add real ones via the Admin panel
 const defaultAnnouncements: Announcement[] = [];
-
-// No default bookings — parishioners submit real ones via the booking form
-const defaultBookings: Booking[] = [];
 
 export const StorageService = {
   // Settings
@@ -99,73 +95,11 @@ export const StorageService = {
     return newRecord;
   },
 
-  updateAnnouncement(id: string, updates: Partial<Announcement>): Announcement | null {
-    const list = this.getAnnouncements();
-    const index = list.findIndex(a => a.id === id);
-    if (index === -1) return null;
-    list[index] = { ...list[index], ...updates };
-    fs.writeFileSync(ANNOUNCEMENTS_FILE, JSON.stringify(list, null, 2), 'utf-8');
-    return list[index];
-  },
-
   deleteAnnouncement(id: string): boolean {
     const list = this.getAnnouncements();
     const filtered = list.filter(a => a.id !== id);
     if (filtered.length === list.length) return false;
     fs.writeFileSync(ANNOUNCEMENTS_FILE, JSON.stringify(filtered, null, 2), 'utf-8');
-    return true;
-  },
-
-  // Bookings
-  getBookings(): Booking[] {
-    ensureDataDir();
-    if (!fs.existsSync(BOOKINGS_FILE)) {
-      fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(defaultBookings, null, 2), 'utf-8');
-      return defaultBookings;
-    }
-    try {
-      const data = fs.readFileSync(BOOKINGS_FILE, 'utf-8');
-      return JSON.parse(data);
-    } catch {
-      return defaultBookings;
-    }
-  },
-
-  createBooking(booking: Omit<Booking, 'id' | 'referenceCode' | 'status' | 'createdAt'>): Booking {
-    const list = this.getBookings();
-    const randomNum = Math.floor(1000 + Math.random() * 9000);
-    const prefix = booking.type === 'mass_intention' ? 'STA-MASS' : booking.type === 'thanksgiving' ? 'STA-THX' : 'STA-PRIEST';
-    const referenceCode = `${prefix}-${randomNum}`;
-    
-    const newBooking: Booking = {
-      ...booking,
-      id: `book-${Date.now()}`,
-      referenceCode,
-      status: 'pending',
-      createdAt: new Date().toISOString()
-    };
-    list.unshift(newBooking);
-    fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(list, null, 2), 'utf-8');
-    return newBooking;
-  },
-
-  updateBookingStatus(id: string, status: Booking['status'], adminNotes?: string): Booking | null {
-    const list = this.getBookings();
-    const index = list.findIndex(b => b.id === id);
-    if (index === -1) return null;
-    list[index].status = status;
-    if (adminNotes !== undefined) {
-      list[index].adminNotes = adminNotes;
-    }
-    fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(list, null, 2), 'utf-8');
-    return list[index];
-  },
-
-  deleteBooking(id: string): boolean {
-    const list = this.getBookings();
-    const filtered = list.filter(b => b.id !== id);
-    if (filtered.length === list.length) return false;
-    fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(filtered, null, 2), 'utf-8');
     return true;
   }
 };

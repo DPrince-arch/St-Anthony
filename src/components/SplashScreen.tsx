@@ -2,12 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 
-interface SplashScreenProps {
-  onComplete?: () => void;
-  minDisplayTime?: number; // ms
-}
+const MIN_DISPLAY_TIME_MS = 350;
 
-export function SplashScreen({ onComplete, minDisplayTime = 350 }: SplashScreenProps) {
+export function SplashScreen() {
   const [isVisible, setIsVisible] = useState(true);
   const [isFading, setIsFading] = useState(false);
 
@@ -17,7 +14,6 @@ export function SplashScreen({ onComplete, minDisplayTime = 350 }: SplashScreenP
     if (hasLoaded) {
       const timer = setTimeout(() => {
         setIsVisible(false);
-        onComplete?.();
       }, 0);
       return () => clearTimeout(timer);
     }
@@ -28,15 +24,14 @@ export function SplashScreen({ onComplete, minDisplayTime = 350 }: SplashScreenP
       fadeTimer = setTimeout(() => {
         setIsVisible(false);
         sessionStorage.setItem('st_anthony_splash_shown', 'true');
-        onComplete?.();
       }, 200);
-    }, minDisplayTime);
+    }, MIN_DISPLAY_TIME_MS);
 
     return () => {
       clearTimeout(timer);
       if (fadeTimer) clearTimeout(fadeTimer);
     };
-  }, [minDisplayTime, onComplete]);
+  }, []);
 
   if (!isVisible) return null;
 
