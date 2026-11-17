@@ -2,16 +2,12 @@
 
 import React, { useState } from 'react';
 import { 
-  Heart, 
   Search, 
-  Sparkles, 
   ChevronRight, 
   RotateCcw, 
   CheckCircle2, 
-  BookOpen, 
   CircleDot,
-  ArrowRight,
-  Cross
+  ArrowRight
 } from 'lucide-react';
 import { PRAYERS } from '@/lib/prayerData';
 import { Prayer, RosaryMysteryGroup } from '@/lib/types';
@@ -29,6 +25,9 @@ export function PrayersSection() {
     const rosary = PRAYERS.find(p => p.id === 'holy-rosary');
     if (rosary?.mysteries) {
       const idx = rosary.mysteries.findIndex(m => m.days.includes(today));
+      // Must run in the browser: the page is prerendered, and the weekday depends on the
+      // visitor's local time zone, so it can't be computed during render.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (idx !== -1) setSelectedMysteryIndex(idx);
     }
   }, []);
@@ -78,7 +77,7 @@ export function PrayersSection() {
             ].map(cat => (
               <button
                 key={cat.id}
-                onClick={() => setSelectedCategory(cat.id as any)}
+                onClick={() => setSelectedCategory(cat.id as typeof selectedCategory)}
                 className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
                   selectedCategory === cat.id
                     ? 'bg-amber-900 text-amber-50 shadow-xs'
@@ -244,7 +243,7 @@ export function PrayersSection() {
                       </h3>
 
                       <p className="font-serif italic text-stone-700 text-sm sm:text-base leading-relaxed">
-                        "{activeDecade.scripture}"
+                        &quot;{activeDecade.scripture}&quot;
                       </p>
                     </div>
                   )}

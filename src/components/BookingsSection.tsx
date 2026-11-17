@@ -35,12 +35,12 @@ const flattenedMassSchedule = [
 
 export function BookingsSection({ settings, defaultType = 'mass_intention' }: BookingsSectionProps) {
   const [bookingType, setBookingType] = useState<BookingType>(defaultType);
-
-  React.useEffect(() => {
-    if (defaultType) {
-      setBookingType(defaultType);
-    }
-  }, [defaultType]);
+  // Follow ?type= changes (e.g. navigating between booking links) without an effect.
+  const [syncedDefaultType, setSyncedDefaultType] = useState(defaultType);
+  if (defaultType !== syncedDefaultType) {
+    setSyncedDefaultType(defaultType);
+    setBookingType(defaultType);
+  }
   const [copiedBank, setCopiedBank] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [successBooking, setSuccessBooking] = useState<Booking | null>(null);
@@ -50,13 +50,11 @@ export function BookingsSection({ settings, defaultType = 'mass_intention' }: Bo
   const [parishionerName, setParishionerName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [requestedDate, setRequestedDate] = useState('');
-
-  React.useEffect(() => {
+  const [requestedDate, setRequestedDate] = useState(() => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    setRequestedDate(tomorrow.toISOString().split('T')[0]);
-  }, []);
+    return tomorrow.toISOString().split('T')[0];
+  });
   const [massTime, setMassTime] = useState('06:30 AM (Dawn Mass)');
   const [intentionType, setIntentionType] = useState<'thanksgiving' | 'repose_soul' | 'birthday' | 'healing' | 'anniversary' | 'special_intention'>('thanksgiving');
   const [intentionFor, setIntentionFor] = useState('');
@@ -178,8 +176,8 @@ export function BookingsSection({ settings, defaultType = 'mass_intention' }: Bo
       setIntentionFor('');
       setNotes('');
       removeReceipt();
-    } catch (err: any) {
-      setErrorMessage(err.message || "An unexpected error occurred.");
+    } catch (err) {
+      setErrorMessage((err instanceof Error && err.message) || "An unexpected error occurred.");
     } finally {
       setSubmitting(false);
     }
@@ -352,10 +350,10 @@ export function BookingsSection({ settings, defaultType = 'mass_intention' }: Bo
                 </label>
                 <select
                   value={intentionType}
-                  onChange={(e) => setIntentionType(e.target.value as any)}
+                  onChange={(e) => setIntentionType(e.target.value as typeof intentionType)}
                   className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3.5 py-2 text-sm text-stone-900 focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
                 >
-                  <option value="thanksgiving">Thanksgiving for God's Blessings</option>
+                  <option value="thanksgiving">Thanksgiving for God&apos;s Blessings</option>
                   <option value="repose_soul">Repose of the Soul (RIP / Departed)</option>
                   <option value="birthday">Birthday Thanksgiving</option>
                   <option value="healing">Divine Healing & Quick Recovery</option>
@@ -485,7 +483,7 @@ export function BookingsSection({ settings, defaultType = 'mass_intention' }: Bo
                 </label>
                 <select
                   value={appointmentReason}
-                  onChange={(e) => setAppointmentReason(e.target.value as any)}
+                  onChange={(e) => setAppointmentReason(e.target.value as typeof appointmentReason)}
                   className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3.5 py-2 text-sm text-stone-900 focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
                 >
                   <option value="spiritual_direction">Spiritual Direction & Guidance</option>
@@ -612,7 +610,7 @@ export function BookingsSection({ settings, defaultType = 'mass_intention' }: Bo
             </div>
 
             <p className="text-[11px] text-stone-500">
-              The parish secretary will review your uploaded bank receipt, confirm the stipend, and include your intention on Father's altar list.
+              The parish secretary will review your uploaded bank receipt, confirm the stipend, and include your intention on Father&apos;s altar list.
             </p>
 
             <button

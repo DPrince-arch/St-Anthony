@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Clock, Calendar, Church, X, Heart } from 'lucide-react';
+import { Clock, X } from 'lucide-react';
 import { PublicSettings } from '@/lib/types';
 
 interface MassScheduleModalProps {

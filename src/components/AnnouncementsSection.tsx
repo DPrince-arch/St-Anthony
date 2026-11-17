@@ -12,7 +12,6 @@ import {
   AlertTriangle, 
   Sparkles, 
   Users, 
-  FileText,
   ChevronRight
 } from 'lucide-react';
 import { Announcement } from '@/lib/types';
@@ -74,7 +73,7 @@ export function AnnouncementsSection({ announcements }: AnnouncementsSectionProp
             ].map(cat => (
               <button
                 key={cat.id}
-                onClick={() => setSelectedCategory(cat.id as any)}
+                onClick={() => setSelectedCategory(cat.id as typeof selectedCategory)}
                 className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
                   selectedCategory === cat.id
                     ? 'bg-amber-900 text-amber-50 shadow-xs'

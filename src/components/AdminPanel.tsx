@@ -107,11 +107,7 @@ export function AdminPanel({ announcements, settings }: AdminPanelProps) {
   const [receiptError, setReceiptError] = useState('');
 
   // Altar Sheet Print State
-  const [altarDate, setAltarDate] = useState('');
-
-  React.useEffect(() => {
-    setAltarDate(new Date().toISOString().split('T')[0]);
-  }, []);
+  const [altarDate, setAltarDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [altarMassTime, setAltarMassTime] = useState<string>('all');
 
   // New Announcement Form State
@@ -154,8 +150,8 @@ export function AdminPanel({ announcements, settings }: AdminPanelProps) {
       setPasscode('');
       setCurrentPage(1);
       await fetchBookings(1, bookingFilterStatus, bookingFilterType, passcode);
-    } catch (err: any) {
-      setAuthError(err.message || "Failed to verify admin credentials.");
+    } catch (err) {
+      setAuthError((err instanceof Error && err.message) || "Failed to verify admin credentials.");
     } finally {
       setAuthLoading(false);
     }
@@ -575,7 +571,7 @@ export function AdminPanel({ announcements, settings }: AdminPanelProps) {
                             Intention Text:
                           </span>
                           <p className="font-serif text-stone-900 text-sm mt-0.5 leading-relaxed">
-                            "{b.intentionFor}"
+                            &quot;{b.intentionFor}&quot;
                           </p>
                         </div>
                       )}
@@ -591,7 +587,7 @@ export function AdminPanel({ announcements, settings }: AdminPanelProps) {
                           </p>
                           {b.notes && (
                             <p className="text-stone-600 text-xs mt-1 italic">
-                              "{b.notes}"
+                              &quot;{b.notes}&quot;
                             </p>
                           )}
                         </div>
@@ -856,7 +852,7 @@ export function AdminPanel({ announcements, settings }: AdminPanelProps) {
                 </label>
                 <select
                   value={annCategory}
-                  onChange={(e) => setAnnCategory(e.target.value as any)}
+                  onChange={(e) => setAnnCategory(e.target.value as typeof annCategory)}
                   className="w-full bg-stone-50 border border-stone-300 rounded-xl px-3.5 py-2 text-sm text-stone-900 focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
                 >
                   <option value="general">General Parish News</option>
@@ -1057,7 +1053,7 @@ export function AdminPanel({ announcements, settings }: AdminPanelProps) {
               <div>
                 <span className="font-mono text-xs font-bold text-amber-900">{selectedReceipt.ref}</span>
                 <h3 className="font-serif font-bold text-lg text-stone-900">
-                  {selectedReceipt.name}'s Receipt
+                  {selectedReceipt.name}&apos;s Receipt
                 </h3>
               </div>
               <button

@@ -6,7 +6,6 @@ import {
   ArrowRight, 
   BookOpen, 
   Heart, 
-  CalendarPlus, 
   Megaphone, 
   ShieldCheck, 
   Clock, 
