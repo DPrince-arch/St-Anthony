@@ -1,16 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createAnnouncement, deleteAnnouncement, getAnnouncements } from '@/lib/data';
+import { createAnnouncement, deleteAnnouncement } from '@/lib/data';
 
 function errorResponse(error: unknown) {
   return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
-}
-
-export async function GET() {
-  try {
-    return NextResponse.json({ success: true, data: getAnnouncements() });
-  } catch (error) {
-    return errorResponse(error);
-  }
 }
 
 export async function POST(request: NextRequest) {

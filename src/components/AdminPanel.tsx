@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   ShieldCheck, 
   LogOut, 
@@ -19,45 +20,77 @@ import {
 import {
   Booking,
   Announcement,
-  ParishSettings,
+  PublicSettings,
   BookingPagination,
   BookingStatus,
   BookingType
 } from '@/lib/types';
 
+const BOOKINGS_PAGE_SIZE = 20;
+
+const emptyPagination: BookingPagination = {
+  page: 1,
+  pageSize: BOOKINGS_PAGE_SIZE,
+  total: 0,
+  pages: 1,
+  statusCounts: { pending: 0, approved: 0, rejected: 0, completed: 0 }
+};
+
 interface AdminPanelProps {
-  bookings: Booking[];
-  bookingPagination: BookingPagination;
-  bookingsLoading: boolean;
-  bookingsError: string;
-  onLoadBookings: (
+  announcements: Announcement[];
+  settings: PublicSettings;
+}
+
+export function AdminPanel({ announcements, settings }: AdminPanelProps) {
+  // Re-renders the server page so `announcements` and `settings` are fresh after a change.
+  const router = useRouter();
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+
+  // Bookings are admin-only, so they are loaded from the browser with the passcode.
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [bookingPagination, setBookingPagination] = useState(emptyPagination);
+  const [bookingsLoading, setBookingsLoading] = useState(false);
+  const [bookingsError, setBookingsError] = useState('');
+  const bookingRequestId = useRef(0);
+
+  const fetchBookings = async (
     page: number,
     status: 'all' | BookingStatus,
     type: 'all' | BookingType,
     passcode: string,
     requestedDate?: string,
     massTime?: string,
-    pageSize?: number
-  ) => Promise<void>;
-  announcements: Announcement[];
-  settings: ParishSettings | null;
-  onRefreshData: () => void;
-  isAdminAuthenticated: boolean;
-  setIsAdminAuthenticated: (val: boolean) => void;
-}
+    pageSize = BOOKINGS_PAGE_SIZE
+  ) => {
+    // Only the latest request may update state, so quick filter changes can't race.
+    const requestId = ++bookingRequestId.current;
+    setBookingsLoading(true);
+    setBookingsError('');
 
-export function AdminPanel({
-  bookings,
-  bookingPagination,
-  bookingsLoading,
-  bookingsError,
-  onLoadBookings,
-  announcements,
-  settings,
-  onRefreshData,
-  isAdminAuthenticated,
-  setIsAdminAuthenticated
-}: AdminPanelProps) {
+    try {
+      const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize), status, type });
+      if (requestedDate) params.set('requestedDate', requestedDate);
+      if (massTime) params.set('massTime', massTime);
+      const response = await fetch(`/api/bookings?${params}`, {
+        headers: { Authorization: `Bearer ${passcode}` }
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to load bookings');
+      }
+      if (requestId === bookingRequestId.current) {
+        setBookings(result.data);
+        setBookingPagination(result.pagination);
+      }
+    } catch (err) {
+      if (requestId === bookingRequestId.current) {
+        setBookingsError(err instanceof Error ? err.message : 'Failed to load bookings');
+      }
+    } finally {
+      if (requestId === bookingRequestId.current) setBookingsLoading(false);
+    }
+  };
+
   const [passcode, setPasscode] = useState('');
   const [adminPasscode, setAdminPasscode] = useState('');
   const [authError, setAuthError] = useState('');
@@ -90,10 +123,11 @@ export function AdminPanel({
   const [creatingAnn, setCreatingAnn] = useState(false);
 
   // Settings Form State
-  const [editBankName, setEditBankName] = useState(settings?.bankDetails.bankName || 'Zenith Bank Plc');
-  const [editAccountName, setEditAccountName] = useState(settings?.bankDetails.accountName || 'St. Anthony Catholic Church - Mass Stipend');
-  const [editAccountNumber, setEditAccountNumber] = useState(settings?.bankDetails.accountNumber || '1018892341');
-  const [editBankNote, setEditBankNote] = useState(settings?.bankDetails.note || '');
+  // Settings form starts from the saved settings, which the server renders with the page.
+  const [editBankName, setEditBankName] = useState(settings.bankDetails.bankName);
+  const [editAccountName, setEditAccountName] = useState(settings.bankDetails.accountName);
+  const [editAccountNumber, setEditAccountNumber] = useState(settings.bankDetails.accountNumber);
+  const [editBankNote, setEditBankNote] = useState(settings.bankDetails.note || '');
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsSuccess, setSettingsSuccess] = useState(false);
 
@@ -119,7 +153,7 @@ export function AdminPanel({
       setAdminPasscode(passcode);
       setPasscode('');
       setCurrentPage(1);
-      await onLoadBookings(1, bookingFilterStatus, bookingFilterType, passcode);
+      await fetchBookings(1, bookingFilterStatus, bookingFilterType, passcode);
     } catch (err: any) {
       setAuthError(err.message || "Failed to verify admin credentials.");
     } finally {
@@ -150,8 +184,7 @@ export function AdminPanel({
       });
 
       if (res.ok) {
-        onRefreshData();
-        await onLoadBookings(currentPage, bookingFilterStatus, bookingFilterType, adminPasscode);
+        await fetchBookings(currentPage, bookingFilterStatus, bookingFilterType, adminPasscode);
       } else {
         throw new Error('Failed to update booking');
       }
@@ -173,8 +206,7 @@ export function AdminPanel({
       if (res.ok) {
         const page = bookings.length === 1 && currentPage > 1 ? currentPage - 1 : currentPage;
         setCurrentPage(page);
-        onRefreshData();
-        await onLoadBookings(page, bookingFilterStatus, bookingFilterType, adminPasscode);
+        await fetchBookings(page, bookingFilterStatus, bookingFilterType, adminPasscode);
       } else {
         throw new Error('Failed to delete booking');
       }
@@ -206,7 +238,7 @@ export function AdminPanel({
         setAnnTitle('');
         setAnnContent('');
         setAnnPinned(false);
-        onRefreshData();
+        router.refresh();
         alert("Announcement posted successfully!");
       }
     } catch (err) {
@@ -221,7 +253,7 @@ export function AdminPanel({
     if (!confirm("Are you sure you want to remove this announcement?")) return;
     try {
       const res = await fetch(`/api/announcements?id=${id}`, { method: 'DELETE' });
-      if (res.ok) onRefreshData();
+      if (res.ok) router.refresh();
     } catch (err) {
       console.error(err);
     }
@@ -250,7 +282,7 @@ export function AdminPanel({
 
       if (res.ok) {
         setSettingsSuccess(true);
-        onRefreshData();
+        router.refresh();
         setTimeout(() => setSettingsSuccess(false), 3000);
       }
     } catch (err) {
@@ -282,11 +314,11 @@ export function AdminPanel({
 
   const loadBookings = (page: number, status = bookingFilterStatus, type = bookingFilterType) => {
     setCurrentPage(page);
-    void onLoadBookings(page, status, type, adminPasscode);
+    void fetchBookings(page, status, type, adminPasscode);
   };
 
   const loadAltarBookings = (date: string, massTime: string) => {
-    void onLoadBookings(1, 'approved', 'all', adminPasscode, date, massTime === 'all' ? undefined : massTime, 100);
+    void fetchBookings(1, 'approved', 'all', adminPasscode, date, massTime === 'all' ? undefined : massTime, 100);
   };
 
   // Intentions for Altar Sheet
@@ -384,9 +416,9 @@ export function AdminPanel({
                 const nextTab = tab.id as typeof adminTab;
                 setAdminTab(nextTab);
                 if (nextTab === 'altar_sheet') {
-                  void onLoadBookings(1, 'approved', 'all', adminPasscode, altarDate, altarMassTime === 'all' ? undefined : altarMassTime, 100);
+                  void fetchBookings(1, 'approved', 'all', adminPasscode, altarDate, altarMassTime === 'all' ? undefined : altarMassTime, 100);
                 } else if (nextTab === 'bookings') {
-                  void onLoadBookings(currentPage, bookingFilterStatus, bookingFilterType, adminPasscode);
+                  void fetchBookings(currentPage, bookingFilterStatus, bookingFilterType, adminPasscode);
                 }
               }}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${
