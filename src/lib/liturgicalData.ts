@@ -317,7 +317,7 @@ async function buildReadings(date: string): Promise<DailyLiturgicalReadings> {
   const firstReading = citation(providedReadings.firstReading, calendarReadings.first_reading);
   const psalm = citation(providedReadings.psalm, calendarReadings.responsorial_psalm);
   const secondReading = citation(providedReadings.secondReading, calendarReadings.second_reading);
-  let acclamation = citation(providedReadings.gospelAcclamation, calendarReadings.gospel_acclamation);
+  const acclamation = citation(providedReadings.gospelAcclamation, calendarReadings.gospel_acclamation);
   const gospel = citation(providedReadings.gospel, calendarReadings.gospel);
   const color = mapColor(event.color);
 
@@ -325,20 +325,20 @@ async function buildReadings(date: string): Promise<DailyLiturgicalReadings> {
     throw new Error(`Daily readings service returned incomplete reading references for ${date}.`);
   }
 
-  if (!acclamation) {
-    try {
-      acclamation = await fetchAcclamationCitation(date);
-    } catch (error) {
-      console.error(`Unable to resolve Gospel Acclamation citation for ${date}:`, error);
-    }
-  }
+  // If the acclamation reference is missing, look it up while the other readings load.
+  const acclamationLookup: Promise<string> = acclamation
+    ? Promise.resolve(acclamation)
+    : fetchAcclamationCitation(date).catch(error => {
+        console.error(`Unable to resolve Gospel Acclamation citation for ${date}:`, error);
+        return '';
+      });
 
-  const [firstReadingText, psalmText, secondReadingText, acclamationText, gospelText] = await Promise.all([
+  const [firstReadingText, psalmText, secondReadingText, gospelText, [acclamationCitation, acclamationText]] = await Promise.all([
     fetchScripture(firstReading),
     fetchScripture(psalm),
     secondReading ? fetchScripture(secondReading) : undefined,
-    acclamation ? fetchScripture(acclamation) : undefined,
-    fetchScripture(gospel)
+    fetchScripture(gospel),
+    acclamationLookup.then(async reference => [reference, reference ? await fetchScripture(reference) : undefined] as const)
   ]);
   const season = mapSeason(event.liturgical_season_lcl);
 
@@ -361,7 +361,7 @@ async function buildReadings(date: string): Promise<DailyLiturgicalReadings> {
       secondReading: secondReading && secondReadingText ? makeReading(secondReading, secondReadingText.text) : undefined,
       gospelAcclamation: {
         verse: acclamationText?.text ?? '',
-        citation: acclamation,
+        citation: acclamationCitation,
         response: season === 'Lent'
           ? 'Praise to you, Lord Jesus Christ.'
           : 'Alleluia, alleluia.'
