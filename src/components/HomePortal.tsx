@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { 
   ArrowRight, 
@@ -14,12 +14,16 @@ import {
   Gift, 
   UserCheck 
 } from 'lucide-react';
+import { MassScheduleModal } from './MassScheduleModal';
+import { PublicSettings } from '@/lib/types';
 
 interface HomePortalProps {
-  onOpenSchedule: () => void;
+  settings: PublicSettings | null;
 }
 
-export function HomePortal({ onOpenSchedule }: HomePortalProps) {
+export function HomePortal({ settings }: HomePortalProps) {
+  const [isScheduleOpen, setIsScheduleOpen] = useState(false);
+
   const sections = [
     {
       id: 'readings',
@@ -73,7 +77,7 @@ export function HomePortal({ onOpenSchedule }: HomePortalProps) {
       id: 'schedule',
       title: 'Mass & Confession Schedule',
       subtitle: 'Weekly Mass timetable & office visiting hours',
-      onClick: onOpenSchedule,
+      onClick: () => setIsScheduleOpen(true),
       icon: Clock,
       iconColor: 'text-stone-800 bg-stone-100'
     },
@@ -88,6 +92,7 @@ export function HomePortal({ onOpenSchedule }: HomePortalProps) {
   ];
 
   return (
+    <>
     <div className="min-h-[75vh] flex flex-col justify-between py-6 sm:py-10 px-4 sm:px-6">
       {/* Main Content Container (No floral patterns) */}
       <div className="max-w-4xl mx-auto w-full text-center space-y-8 sm:space-y-10">
@@ -185,5 +190,12 @@ export function HomePortal({ onOpenSchedule }: HomePortalProps) {
         </div>
       </div>
     </div>
+
+    <MassScheduleModal
+      isOpen={isScheduleOpen}
+      onClose={() => setIsScheduleOpen(false)}
+      settings={settings}
+    />
+    </>
   );
 }

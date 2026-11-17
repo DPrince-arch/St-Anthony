@@ -3,13 +3,11 @@ import fs from 'fs';
 import path from 'path';
 import { cache } from 'react';
 import { getLiturgicalReadingsForDate } from './liturgicalData';
-import { Announcement, ParishSettings } from './types';
+import { Announcement, ParishSettings, PublicSettings } from './types';
 
 // Single server-side data layer: parish settings and announcements live in
 // JSON files under /data; bookings live in Supabase (see supabase.ts);
 // liturgical readings come from public APIs (see liturgicalData.ts).
-
-export type PublicSettings = Omit<ParishSettings, 'adminPasscode'>;
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const ANNOUNCEMENTS_FILE = path.join(DATA_DIR, 'announcements.json');
@@ -122,5 +120,5 @@ export function todayIsoDate(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-/** Readings for a date. Cached across requests (see liturgicalData.ts) and deduped within a request. */
+/** Readings (or an error message) for a date. Cached across requests (see liturgicalData.ts) and deduped within a request. */
 export const getReadings = cache(getLiturgicalReadingsForDate);

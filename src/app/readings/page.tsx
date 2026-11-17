@@ -1,52 +1,36 @@
-'use client';
-
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import { Header } from '@/components/Header';
-import { BottomNav } from '@/components/BottomNav';
+import { Suspense } from 'react';
+import { connection } from 'next/server';
+import { PageShell } from '@/components/PageShell';
 import { ReadingsSection } from '@/components/ReadingsSection';
-import { useLiturgicalReadings } from '@/lib/useLiturgicalReadings';
+import { getReadings, todayIsoDate } from '@/lib/data';
+import { isValidIsoDate } from '@/lib/liturgicalData';
 
-export default function ReadingsPage() {
-  const [selectedDate, setSelectedDate] = useState<string>('');
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-  useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
-    void Promise.resolve().then(() => setSelectedDate(today));
-  }, []);
-
-  const { readings, error, loading } = useLiturgicalReadings(selectedDate);
+export default function ReadingsPage({ searchParams }: { searchParams: SearchParams }) {
+  // ?date=YYYY-MM-DD selects the day; without it, today is shown.
+  const date = searchParams.then(params => (typeof params.date === 'string' ? params.date : undefined));
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#faf7f2] text-stone-900 selection:bg-amber-100 selection:text-amber-900">
-      <Header liturgicalData={readings} activePath="/readings" />
-      <BottomNav />
-
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <div className="mb-4">
-          <Link
-            href="/"
-            className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold text-stone-700 hover:text-stone-900 bg-white hover:bg-stone-50 border border-stone-200/90 shadow-2xs transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4 text-amber-800" />
-            <span>Back to Home</span>
-          </Link>
-        </div>
-
-        <ReadingsSection
-          initialReadings={readings}
-          selectedDate={selectedDate}
-          onDateChange={setSelectedDate}
-          error={error}
-          loading={loading}
-        />
-      </main>
-
-      <footer className="border-t border-stone-200/80 bg-white/90 py-8 px-4 text-center text-xs text-stone-500 mb-16 md:mb-0">
-        <p className="font-serif font-bold text-sm text-stone-800">St. Anthony Catholic Church</p>
-        <p className="text-stone-500">Daily Liturgical Readings &bull; Lectionary Roman Rite</p>
-      </footer>
-    </div>
+    <PageShell activePath="/readings" headerDate={date} footerTagline="Daily Liturgical Readings • Lectionary Roman Rite">
+      <Suspense fallback={<ReadingsSection readings={null} selectedDate="" loading />}>
+        <Readings date={date} />
+      </Suspense>
+    </PageShell>
   );
+}
+
+async function Readings({ date }: { date: Promise<string | undefined> }) {
+  await connection();
+  const selectedDate = (await date) ?? todayIsoDate();
+
+  if (!selectedDate) {
+    return <ReadingsSection readings={null} selectedDate="" />;
+  }
+  if (!isValidIsoDate(selectedDate)) {
+    return <ReadingsSection readings={null} selectedDate={selectedDate} error="Date must be a valid date in YYYY-MM-DD format." />;
+  }
+
+  const result = await getReadings(selectedDate);
+  return <ReadingsSection readings={result.readings} selectedDate={selectedDate} error={result.error} />;
 }

@@ -178,18 +178,27 @@ async function fetchAcclamationCitation(date: string): Promise<string> {
 
 // The whole year's calendar (~0.5 MB) is the slowest call, so it is cached on its own
 // and shared by every date in that year. Only the fields we use are kept.
-async function fetchCalendarEvents(year: string): Promise<CalendarEvent[]> {
+// Failures are returned (not thrown) so the real message survives the cache boundary.
+async function fetchCalendarEvents(year: string): Promise<{ events: CalendarEvent[] } | { error: string }> {
   'use cache';
-  cacheLife('days');
-
-  const response = await fetch(`${CALENDAR_API}?year=${year}&locale=en_US`);
-  if (!response.ok) {
-    throw new Error(`Liturgical calendar service returned HTTP ${response.status}.`);
+  try {
+    const response = await fetch(`${CALENDAR_API}?year=${year}&locale=en_US`);
+    if (!response.ok) throw new Error(`Liturgical calendar service returned HTTP ${response.status}.`);
+    const calendar = await response.json() as CalendarResponse;
+    cacheLife('days');
+    return {
+      events: (calendar.litcal ?? []).map(({ date, name, color, grade_lcl, grade, liturgical_season_lcl, readings, is_vigil_mass }) =>
+        ({ date, name, color, grade_lcl, grade, liturgical_season_lcl, readings, is_vigil_mass })
+      )
+    };
+  } catch (error) {
+    cacheLife('seconds');
+    return { error: errorMessage(error) };
   }
-  const calendar = await response.json() as CalendarResponse;
-  return (calendar.litcal ?? []).map(({ date, name, color, grade_lcl, grade, liturgical_season_lcl, readings, is_vigil_mass }) =>
-    ({ date, name, color, grade_lcl, grade, liturgical_season_lcl, readings, is_vigil_mass })
-  );
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Unable to load liturgical readings.';
 }
 
 async function fetchDailyReadings(date: string): Promise<ReadingsResponse> {
@@ -200,17 +209,36 @@ async function fetchDailyReadings(date: string): Promise<ReadingsResponse> {
   return response.json() as Promise<ReadingsResponse>;
 }
 
-/** Full readings for a YYYY-MM-DD date. Cached for a day per date. */
-export async function getLiturgicalReadingsForDate(date: string): Promise<DailyLiturgicalReadings> {
-  'use cache';
-  cacheLife('days');
+export type ReadingsResult =
+  | { readings: DailyLiturgicalReadings; error: null }
+  | { readings: null; error: string };
 
+/**
+ * Full readings for a YYYY-MM-DD date. Successful results are cached for a day per date;
+ * failures for only a few seconds, so the next request retries.
+ */
+export async function getLiturgicalReadingsForDate(date: string): Promise<ReadingsResult> {
+  'use cache';
+  try {
+    const readings = await buildReadings(date);
+    cacheLife('days');
+    return { readings, error: null };
+  } catch (error) {
+    console.error(`Failed to load liturgical readings for ${date}:`, error);
+    cacheLife('seconds');
+    return { readings: null, error: errorMessage(error) };
+  }
+}
+
+async function buildReadings(date: string): Promise<DailyLiturgicalReadings> {
   if (!isValidIsoDate(date)) throw new Error('Date must be a valid ISO date in YYYY-MM-DD format.');
 
-  const [calendarEvents, readingsData] = await Promise.all([
+  const [calendar, readingsData] = await Promise.all([
     fetchCalendarEvents(date.slice(0, 4)),
     fetchDailyReadings(date)
   ]);
+  if ('error' in calendar) throw new Error(calendar.error);
+  const calendarEvents = calendar.events;
 
   const dayEvents = calendarEvents.filter(event =>
     event.date?.slice(0, 10) === date && !event.is_vigil_mass && !event.name.toLowerCase().includes('vigil mass')

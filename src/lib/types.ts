@@ -142,3 +142,6 @@ export interface ParishSettings {
   officeHours: string;
   adminPasscode: string;
 }
+
+/** Settings as exposed to pages and the browser: everything except the admin passcode. */
+export type PublicSettings = Omit<ParishSettings, 'adminPasscode'>;

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -18,16 +19,29 @@ import { DailyLiturgicalReadings } from '@/lib/types';
 import { LITURGICAL_COLORS } from '@/lib/liturgicalColors';
 
 interface ReadingsSectionProps {
-  initialReadings: DailyLiturgicalReadings | null;
-  onDateChange: (dateStr: string) => void;
+  readings: DailyLiturgicalReadings | null;
   selectedDate: string;
-  loading?: boolean;
   error?: string | null;
+  /** True for the placeholder rendered while the page's data is still streaming in. */
+  loading?: boolean;
 }
 
 type ReadingTab = 'all' | 'first' | 'psalm' | 'second' | 'gospel' | 'reflection';
 
-export function ReadingsSection({ initialReadings: readings, onDateChange, selectedDate, loading = false, error }: ReadingsSectionProps) {
+export function ReadingsSection({ readings: loadedReadings, selectedDate: loadedDate, error: loadedError, loading: initialLoading = false }: ReadingsSectionProps) {
+  // Changing the date navigates to /readings?date=…; the server renders the new readings.
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [pendingDate, setPendingDate] = useState('');
+  const onDateChange = (dateStr: string) => {
+    setPendingDate(dateStr);
+    startTransition(() => router.push(`/readings?date=${encodeURIComponent(dateStr)}`, { scroll: false }));
+  };
+  const selectedDate = isPending ? pendingDate : loadedDate;
+  const readings = isPending ? null : loadedReadings;
+  const error = isPending ? null : loadedError;
+  const loading = initialLoading || isPending;
+
   const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xlarge'>('normal');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [copied, setCopied] = useState(false);

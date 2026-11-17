@@ -12,10 +12,10 @@ import {
   Church, 
   AlertCircle,
 } from 'lucide-react';
-import { BookingType, ParishSettings, Booking } from '@/lib/types';
+import { BookingType, PublicSettings, Booking } from '@/lib/types';
 
 interface BookingsSectionProps {
-  settings: ParishSettings | null;
+  settings: PublicSettings | null;
   defaultType?: BookingType;
 }
 

@@ -2,12 +2,12 @@
 
 import React from 'react';
 import { Clock, Calendar, Church, X, Heart } from 'lucide-react';
-import { ParishSettings } from '@/lib/types';
+import { PublicSettings } from '@/lib/types';
 
 interface MassScheduleModalProps {
   isOpen: boolean;
   onClose: () => void;
-  settings: ParishSettings | null;
+  settings: PublicSettings | null;
 }
 
 export function MassScheduleModal({ isOpen, onClose, settings }: MassScheduleModalProps) {
