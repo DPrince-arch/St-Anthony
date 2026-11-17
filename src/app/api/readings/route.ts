@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const readings = await getLiturgicalReadingsForDate(dateParam || undefined);
+    const readings = await getLiturgicalReadingsForDate(dateParam || new Date().toISOString().slice(0, 10));
     return NextResponse.json({ success: true, data: readings });
   } catch (error) {
     return NextResponse.json(

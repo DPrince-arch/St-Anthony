@@ -1,4 +1,5 @@
 import 'server-only';
+import { cacheLife } from 'next/cache';
 import { DailyLiturgicalReadings, LiturgicalColor } from './types';
 import { LITURGICAL_COLORS } from './liturgicalColors';
 
@@ -7,7 +8,6 @@ const READINGS_API = 'https://cpbjr.github.io/catholic-readings-api';
 const LECTIONARY_METADATA_API = 'https://raw.githubusercontent.com/montanojd/catholic-missal/main';
 const SCRIPTURE_API = 'https://bible-api.com';
 const SCRIPTURE_TRANSLATION = 'web';
-const DATA_REVALIDATE_SECONDS = 60 * 60 * 24;
 
 interface CalendarEvent {
   date: string;
@@ -118,8 +118,7 @@ async function fetchScripturePart(reference: string): Promise<ScriptureResponse>
     .replace(/^cf\.?\s*/i, '')
     .trim();
   const response = await fetch(
-    `${SCRIPTURE_API}/${encodeURIComponent(normalizedReference)}?translation=${SCRIPTURE_TRANSLATION}`,
-    { next: { revalidate: DATA_REVALIDATE_SECONDS } }
+    `${SCRIPTURE_API}/${encodeURIComponent(normalizedReference)}?translation=${SCRIPTURE_TRANSLATION}`
   );
   if (!response.ok) {
     throw new Error(`Scripture text service could not resolve "${normalizedReference}" (HTTP ${response.status}).`);
@@ -162,9 +161,7 @@ async function fetchAcclamationCitation(date: string): Promise<string> {
     .toLocaleDateString('en-US', { month: 'long', timeZone: 'UTC' })
     .toLowerCase();
   const metadataUrl = `${LECTIONARY_METADATA_API}/${dateParts[0]}_${dateParts[1]}_${monthName}.json`;
-  const response = await fetch(metadataUrl, {
-    next: { revalidate: DATA_REVALIDATE_SECONDS }
-  });
+  const response = await fetch(metadataUrl);
   if (!response.ok) {
     throw new Error(`Lectionary metadata service returned HTTP ${response.status} for ${date}.`);
   }
@@ -179,34 +176,45 @@ async function fetchAcclamationCitation(date: string): Promise<string> {
     .trim();
 }
 
-export async function getLiturgicalReadingsForDate(dateStr?: string): Promise<DailyLiturgicalReadings> {
-  const date = dateStr ?? new Date().toISOString().slice(0, 10);
+// The whole year's calendar (~0.5 MB) is the slowest call, so it is cached on its own
+// and shared by every date in that year. Only the fields we use are kept.
+async function fetchCalendarEvents(year: string): Promise<CalendarEvent[]> {
+  'use cache';
+  cacheLife('days');
+
+  const response = await fetch(`${CALENDAR_API}?year=${year}&locale=en_US`);
+  if (!response.ok) {
+    throw new Error(`Liturgical calendar service returned HTTP ${response.status}.`);
+  }
+  const calendar = await response.json() as CalendarResponse;
+  return (calendar.litcal ?? []).map(({ date, name, color, grade_lcl, grade, liturgical_season_lcl, readings, is_vigil_mass }) =>
+    ({ date, name, color, grade_lcl, grade, liturgical_season_lcl, readings, is_vigil_mass })
+  );
+}
+
+async function fetchDailyReadings(date: string): Promise<ReadingsResponse> {
+  const response = await fetch(`${READINGS_API}/readings/${date.slice(0, 4)}/${date.slice(5)}.json`);
+  if (!response.ok) {
+    throw new Error(`Daily readings service returned HTTP ${response.status}.`);
+  }
+  return response.json() as Promise<ReadingsResponse>;
+}
+
+/** Full readings for a YYYY-MM-DD date. Cached for a day per date. */
+export async function getLiturgicalReadingsForDate(date: string): Promise<DailyLiturgicalReadings> {
+  'use cache';
+  cacheLife('days');
+
   if (!isValidIsoDate(date)) throw new Error('Date must be a valid ISO date in YYYY-MM-DD format.');
 
-  const [calendarResponse, readingsResponse] = await Promise.all([
-    fetch(`${CALENDAR_API}?year=${date.slice(0, 4)}&locale=en_US`, {
-      next: { revalidate: DATA_REVALIDATE_SECONDS }
-    }),
-    fetch(`${READINGS_API}/readings/${date.slice(0, 4)}/${date.slice(5)}.json`, {
-      next: { revalidate: DATA_REVALIDATE_SECONDS }
-    })
+  const [calendarEvents, readingsData] = await Promise.all([
+    fetchCalendarEvents(date.slice(0, 4)),
+    fetchDailyReadings(date)
   ]);
 
-  if (!calendarResponse.ok) {
-    throw new Error(`Liturgical calendar service returned HTTP ${calendarResponse.status}.`);
-  }
-  if (!readingsResponse.ok) {
-    throw new Error(`Daily readings service returned HTTP ${readingsResponse.status}.`);
-  }
-
-  const [calendarData, readingsData] = await Promise.all([
-    calendarResponse.json() as Promise<CalendarResponse>,
-    readingsResponse.json() as Promise<ReadingsResponse>
-  ]);
-
-  const dayEvents = calendarData.litcal?.filter(event =>
+  const dayEvents = calendarEvents.filter(event =>
     event.date?.slice(0, 10) === date && !event.is_vigil_mass && !event.name.toLowerCase().includes('vigil mass')
-  ) ?? [];
+  );
   const event = dayEvents.sort((left, right) => (right.grade ?? 0) - (left.grade ?? 0))[0];
   if (!event) throw new Error(`No Roman calendar event was returned for ${date}.`);
   if (readingsData.date !== date || !readingsData.readings) {
