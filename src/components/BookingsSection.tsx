@@ -34,6 +34,36 @@ const flattenedMassSchedule = [
   { day: "Saturday", time: "07:00 AM (Memorial of B.V.M)" }
 ];
 
+const SHRINK_RECEIPTS_ABOVE_BYTES = 500 * 1024;
+const MAX_RECEIPT_SIDE_PX = 1600;
+
+/**
+ * Downscales large receipt photos in the browser (longest side 1600 px, JPEG) so they
+ * upload quickly over mobile data. Keeps the original if anything fails or it isn't smaller.
+ */
+async function shrinkReceipt(file: File): Promise<File> {
+  if (file.size <= SHRINK_RECEIPTS_ABOVE_BYTES) return file;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, MAX_RECEIPT_SIDE_PX / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    const context = canvas.getContext('2d');
+    if (!context) return file;
+    context.fillStyle = '#ffffff'; // transparent PNG areas become white, not black
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+
+    const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.82));
+    if (!blob || blob.size >= file.size) return file;
+    return new File([blob], `${file.name.replace(/\.[^.]+$/, '')}.jpg`, { type: 'image/jpeg' });
+  } catch {
+    return file;
+  }
+}
+
 export function BookingsSection({ settings, defaultType = 'mass_intention' }: BookingsSectionProps) {
   const [bookingType, setBookingType] = useState<BookingType>(defaultType);
   // Follow ?type= changes (e.g. navigating between booking links) without an effect.
@@ -93,7 +123,7 @@ export function BookingsSection({ settings, defaultType = 'mass_intention' }: Bo
   };
 
   // Keep the receipt as a file so the API can upload it to object storage.
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -108,7 +138,7 @@ export function BookingsSection({ settings, defaultType = 'mass_intention' }: Bo
     }
 
     setReceiptFileName(file.name);
-    setReceiptAttachment(file);
+    setReceiptAttachment(await shrinkReceipt(file));
   };
 
   const removeReceipt = () => {
