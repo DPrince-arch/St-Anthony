@@ -26,6 +26,14 @@ import {
   BookingType
 } from '@/lib/types';
 import { todayInParish } from '@/lib/dates';
+import {
+  catalogForSection,
+  MASS_SCHEDULE_OPTIONS,
+  altarIntentionText,
+  detailLabel,
+  formatBookingValue,
+  getBookingConfig
+} from '@/lib/bookingCatalog';
 
 const BOOKINGS_PAGE_SIZE = 20;
 
@@ -320,6 +328,8 @@ export function AdminPanel({ announcements, settings }: AdminPanelProps) {
 
   // Intentions for Altar Sheet
   const altarIntentions = bookings.filter(b => {
+    // Only Mass bookings are read at the altar (not weddings, funerals, appointments...).
+    if (getBookingConfig(b.type).group !== 'masses') return false;
     const isApproved = b.status === 'approved';
     const matchesDate = b.requestedDate === altarDate;
     const matchesMass = altarMassTime === 'all' || b.massTime === altarMassTime;
@@ -491,9 +501,13 @@ export function AdminPanel({ announcements, settings }: AdminPanelProps) {
                 className="bg-stone-50 border border-stone-200 rounded-xl px-2.5 py-1 text-xs font-medium text-stone-800"
               >
                 <option value="all">All Types</option>
-                <option value="mass_intention">Mass Intentions</option>
-                <option value="thanksgiving">Thanksgiving</option>
-                <option value="priest_appointment">Priest Appointments</option>
+                {(['bookings', 'payments'] as const).map(section => (
+                  <optgroup key={section} label={section === 'bookings' ? 'Bookings' : 'Payments'}>
+                    {catalogForSection(section).map(config => (
+                      <option key={config.id} value={config.id}>{config.title}</option>
+                    ))}
+                  </optgroup>
+                ))}
               </select>
             </div>
           </div>
@@ -521,8 +535,8 @@ export function AdminPanel({ announcements, settings }: AdminPanelProps) {
                       <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-md bg-stone-100 text-amber-950 border border-stone-200">
                         {b.referenceCode}
                       </span>
-                      <span className="text-xs font-semibold text-stone-700 capitalize">
-                        {b.type.replace('_', ' ')}
+                      <span className="text-xs font-semibold text-stone-700">
+                        {getBookingConfig(b.type).title}
                       </span>
                     </div>
 
@@ -565,6 +579,18 @@ export function AdminPanel({ announcements, settings }: AdminPanelProps) {
                         </div>
                       </div>
 
+                      {/* Type-specific answers (names, venue, amount...) */}
+                      {b.details && (
+                        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 bg-stone-50 p-3 rounded-xl border border-stone-100 text-xs">
+                          {Object.entries(b.details).map(([key, value]) => (
+                            <div key={key}>
+                              <dt className="text-[10px] font-bold uppercase text-stone-500">{detailLabel(b.type, key)}</dt>
+                              <dd className="text-stone-900 font-semibold">{formatBookingValue(b.type, key, value)}</dd>
+                            </div>
+                          ))}
+                        </dl>
+                      )}
+
                       {/* Intention Text */}
                       {b.intentionFor && (
                         <div className="bg-stone-50 p-3 rounded-xl border border-stone-100">
@@ -578,6 +604,11 @@ export function AdminPanel({ announcements, settings }: AdminPanelProps) {
                       )}
 
                       {/* Appointment Reason */}
+                      {/* Notes on bookings other than appointments (shown with the appointment below) */}
+                      {b.notes && !b.appointmentReason && (
+                        <p className="text-stone-600 text-xs italic">&quot;{b.notes}&quot;</p>
+                      )}
+
                       {b.appointmentReason && (
                         <div className="bg-stone-50 p-3 rounded-xl border border-stone-100">
                           <span className="text-[10px] font-bold uppercase text-stone-500 block">
@@ -597,7 +628,7 @@ export function AdminPanel({ announcements, settings }: AdminPanelProps) {
                       <div className="flex flex-wrap items-center gap-4 text-xs text-stone-500 pt-1 font-sans">
                         <span className="flex items-center space-x-1">
                           <Calendar className="w-3.5 h-3.5 text-stone-400" />
-                          <span>Mass Date: <strong>{b.requestedDate}</strong></span>
+                          <span>{getBookingConfig(b.type).dateLabel}: <strong>{b.requestedDate}</strong></span>
                         </span>
                         {b.massTime && (
                           <span className="flex items-center space-x-1">
@@ -742,11 +773,9 @@ export function AdminPanel({ announcements, settings }: AdminPanelProps) {
                   className="bg-stone-50 border border-stone-300 rounded-xl px-3 py-1.5 text-xs font-semibold text-stone-900"
                 >
                   <option value="all">All Scheduled Masses</option>
-                  <option value="06:30 AM (Dawn Mass)">06:30 AM (Dawn Mass)</option>
-                  <option value="08:30 AM (Family Mass)">08:30 AM (Family Mass)</option>
-                  <option value="10:30 AM (High Mass)">10:30 AM (High Mass)</option>
-                  <option value="12:00 PM (Midday Mass)">12:00 PM (Midday Mass)</option>
-                  <option value="06:00 PM (Evening Mass)">06:00 PM (Evening Mass)</option>
+                  {MASS_SCHEDULE_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -799,7 +828,7 @@ export function AdminPanel({ announcements, settings }: AdminPanelProps) {
                         <td className="py-3 px-3 font-sans font-semibold text-stone-400">{idx + 1}</td>
                         <td className="py-3 px-3 font-sans font-semibold text-stone-800 whitespace-nowrap">{intent.massTime}</td>
                         <td className="py-3 px-3 font-semibold text-stone-950">{intent.parishionerName}</td>
-                        <td className="py-3 px-3 text-stone-800 leading-relaxed italic">{intent.intentionFor}</td>
+                        <td className="py-3 px-3 text-stone-800 leading-relaxed italic">{altarIntentionText(intent)}</td>
                         <td className="py-3 px-3 font-mono text-xs text-stone-500 text-right">{intent.referenceCode}</td>
                       </tr>
                     ))}

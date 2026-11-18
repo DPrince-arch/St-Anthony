@@ -3,9 +3,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isAdminRequest } from '@/lib/data';
 import { getSupabaseAdmin, RECEIPTS_BUCKET, toBooking } from '@/lib/supabase';
 import { BookingStatus, BookingType } from '@/lib/types';
+import { CoreField, getBookingConfig, isBookingType, isCoreField } from '@/lib/bookingCatalog';
+import { todayInParish } from '@/lib/dates';
 
 const bookingStatuses: BookingStatus[] = ['pending', 'approved', 'rejected', 'completed'];
-const bookingTypes: BookingType[] = ['mass_intention', 'thanksgiving', 'priest_appointment'];
 const emptyStatusCounts: Record<BookingStatus, number> = {
   pending: 0,
   approved: 0,
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
     if (status !== 'all' && !bookingStatuses.includes(status as BookingStatus)) {
       return NextResponse.json({ success: false, error: 'Invalid booking status filter' }, { status: 400 });
     }
-    if (type !== 'all' && !bookingTypes.includes(type as BookingType)) {
+    if (type !== 'all' && !isBookingType(type)) {
       return NextResponse.json({ success: false, error: 'Invalid booking type filter' }, { status: 400 });
     }
     if (requestedDate && !/^\d{4}-\d{2}-\d{2}$/.test(requestedDate)) {
@@ -105,20 +106,47 @@ export async function POST(request: NextRequest) {
     const receiptEntry = formData.get('receipt');
     const receipt = receiptEntry instanceof File ? receiptEntry : null;
 
-    if (!parishionerName || !phone || !requestedDate || !bookingTypes.includes(type as BookingType)) {
+    if (!parishionerName || !phone || !requestedDate || !isBookingType(type)) {
       return NextResponse.json(
         { success: false, error: 'Please fill in all required fields (Name, Phone, Date, Type)' },
         { status: 400 }
       );
     }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(requestedDate)) {
+      return NextResponse.json({ success: false, error: 'Invalid date' }, { status: 400 });
+    }
+    const config = getBookingConfig(type);
+    if (config.pastDate && requestedDate > todayInParish()) {
+      return NextResponse.json({ success: false, error: `${config.dateLabel} cannot be in the future` }, { status: 400 });
+    }
+
     if (receiptEntry !== null && !receipt) {
       return NextResponse.json({ success: false, error: 'Receipt must be an image file' }, { status: 400 });
     }
-    if ((type === 'mass_intention' || type === 'thanksgiving') && !text('intentionFor')) {
-      return NextResponse.json({ success: false, error: 'Please describe the Mass intention' }, { status: 400 });
-    }
-    if ((type === 'mass_intention' || type === 'thanksgiving') && !receipt) {
+    if (config.receipt === 'required' && !receipt) {
       return NextResponse.json({ success: false, error: 'A receipt image is required' }, { status: 400 });
+    }
+
+    // Only the fields this booking type asks for are stored; the rest of the form is ignored.
+    const columns: Partial<Record<CoreField, string>> = {};
+    const details: Record<string, string> = {};
+    for (const field of config.fields) {
+      const value = text(field.name).slice(0, 2000);
+      if (field.required && !value) {
+        return NextResponse.json({ success: false, error: `Please fill in: ${field.label}` }, { status: 400 });
+      }
+      if (field.options && value && !field.options.some(option => option.value === value)) {
+        return NextResponse.json({ success: false, error: `Invalid choice for: ${field.label}` }, { status: 400 });
+      }
+      if (field.kind === 'amount' && value && !/^\d+(\.\d{1,2})?$/.test(value)) {
+        return NextResponse.json({ success: false, error: `${field.label} must be a number` }, { status: 400 });
+      }
+      if (field.kind === 'month' && value && !/^\d{4}-(0[1-9]|1[0-2])$/.test(value)) {
+        return NextResponse.json({ success: false, error: `Invalid month for: ${field.label}` }, { status: 400 });
+      }
+      if (!value) continue;
+      if (isCoreField(field.name)) columns[field.name] = value;
+      else details[field.name] = value;
     }
     if (receipt && (receipt.size > 5 * 1024 * 1024 || !['image/jpeg', 'image/png', 'image/webp'].includes(receipt.type))) {
       return NextResponse.json(
@@ -128,8 +156,7 @@ export async function POST(request: NextRequest) {
     }
 
     const id = randomUUID();
-    const prefix = type === 'mass_intention' ? 'STA-MASS' : type === 'thanksgiving' ? 'STA-THX' : 'STA-PRIEST';
-    const referenceCode = `${prefix}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const referenceCode = `${config.referencePrefix}-${Math.floor(1000 + Math.random() * 9000)}`;
     const supabase = getSupabaseAdmin();
 
     if (receipt) {
@@ -149,17 +176,18 @@ export async function POST(request: NextRequest) {
       .insert({
         id,
         reference_code: referenceCode,
-        type: type as BookingType,
+        type,
         parishioner_name: parishionerName,
         email: text('email'),
         phone,
-        intention_type: text('intentionType') || null,
-        intention_for: text('intentionFor') || null,
+        intention_type: columns.intentionType ?? null,
+        intention_for: columns.intentionFor ?? null,
         requested_date: requestedDate,
-        mass_time: text('massTime') || null,
-        appointment_reason: text('appointmentReason') || null,
-        preferred_time_slot: text('preferredTimeSlot') || null,
-        notes: text('notes') || null,
+        mass_time: columns.massTime ?? null,
+        appointment_reason: columns.appointmentReason ?? null,
+        preferred_time_slot: columns.preferredTimeSlot ?? null,
+        notes: columns.notes ?? null,
+        details,
         receipt_path: uploadedPath ?? null,
         receipt_uploaded_at: uploadedPath ? new Date().toISOString() : null,
         admin_notes: ''

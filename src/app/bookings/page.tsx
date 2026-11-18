@@ -3,9 +3,7 @@ import { connection } from 'next/server';
 import { PageShell } from '@/components/PageShell';
 import { BookingsSection } from '@/components/BookingsSection';
 import { getPublicSettings } from '@/lib/data';
-import { BookingType } from '@/lib/types';
-
-const bookingTypes: BookingType[] = ['mass_intention', 'thanksgiving', 'priest_appointment'];
+import { getBookingConfig, isBookingType, sectionOfGroup } from '@/lib/bookingCatalog';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -22,6 +20,8 @@ export default function BookingsPage({ searchParams }: { searchParams: SearchPar
 async function Bookings({ searchParams }: { searchParams: SearchParams }) {
   await connection();
   const { type } = await searchParams;
-  const defaultType = bookingTypes.find(bookingType => bookingType === type) ?? 'mass_intention';
-  return <BookingsSection settings={getPublicSettings()} defaultType={defaultType} />;
+  // Payment types (tithe, donation...) live on /payments, so they aren't opened here.
+  const defaultType =
+    isBookingType(type) && sectionOfGroup(getBookingConfig(type).group) === 'bookings' ? type : 'mass_intention';
+  return <BookingsSection settings={getPublicSettings()} defaultType={defaultType} section="bookings" />;
 }

@@ -10,8 +10,9 @@ import {
   ShieldCheck, 
   Clock, 
   Church, 
-  Gift, 
-  UserCheck 
+  Gift,
+  HandCoins,
+  UserCheck
 } from 'lucide-react';
 import { MassScheduleModal } from './MassScheduleModal';
 import { PublicSettings } from '@/lib/types';
@@ -63,6 +64,14 @@ export function HomePortal({ settings }: HomePortalProps) {
       href: '/bookings?type=priest_appointment',
       icon: UserCheck,
       iconColor: 'text-blue-800 bg-blue-50'
+    },
+    {
+      id: 'payments',
+      title: 'Tithes & Payments',
+      subtitle: 'Tithe, harvest levy, donations & offerings',
+      href: '/payments',
+      icon: HandCoins,
+      iconColor: 'text-teal-800 bg-teal-50'
     },
     {
       id: 'announcements',

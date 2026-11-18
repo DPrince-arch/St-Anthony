@@ -17,6 +17,7 @@ export type BookingRow = {
   appointment_reason: string | null;
   preferred_time_slot: string | null;
   notes: string | null;
+  details: Record<string, string>;
   receipt_path: string | null;
   receipt_uploaded_at: string | null;
   status: BookingStatus;
@@ -24,8 +25,9 @@ export type BookingRow = {
   created_at: string;
 };
 
-type BookingInsert = Omit<BookingRow, 'id' | 'created_at' | 'status'> & {
+type BookingInsert = Omit<BookingRow, 'id' | 'created_at' | 'status' | 'details'> & {
   id?: string;
+  details?: Record<string, string>;
   created_at?: string;
   status?: BookingStatus;
 };
@@ -87,6 +89,7 @@ export function toBooking(row: BookingRow): Booking {
     appointmentReason: (row.appointment_reason ?? undefined) as Booking['appointmentReason'],
     preferredTimeSlot: row.preferred_time_slot ?? undefined,
     notes: row.notes ?? undefined,
+    details: row.details && Object.keys(row.details).length > 0 ? row.details : undefined,
     hasReceipt: Boolean(row.receipt_path),
     receiptUploadedAt: row.receipt_uploaded_at ?? undefined,
     status: row.status,

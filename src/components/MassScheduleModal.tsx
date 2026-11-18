@@ -82,8 +82,14 @@ export function MassScheduleModal({ isOpen, onClose, settings }: MassScheduleMod
           </div>
 
           <div>
-            <span className="font-bold text-stone-900 block">Parish Office & Priests Visiting Hours:</span>
-            <p className="mt-0.5">{settings?.officeHours || "Mondays - Friday: 9:00 AM - 4:00 PM"}</p>
+            <span className="font-bold text-stone-900 block">Parish Office Hours:</span>
+            <p className="mt-0.5">{settings?.officeHours || "Mondays, Tuesday, Wednesday, Friday: 8:00 AM - 3:00 PM"}</p>
+          </div>
+
+
+          <div>
+            <span className="font-bold text-stone-900 block">Priests Visiting Hours:</span>
+            <p className="mt-0.5">{settings?.priestOfficeHours || "Mondays, Wednesdays, Fridays: 10:00 AM - 3:00 PM"}</p>
           </div>
         </div>
 

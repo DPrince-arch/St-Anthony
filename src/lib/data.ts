@@ -15,10 +15,10 @@ const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
 
 const defaultSettings: ParishSettings = {
   churchName: "St. Anthony Catholic Church",
-  parishAddress: "124 St. Anthony Way, Archdiocese of Lagos / Abuja / London",
+  parishAddress: "AIT Road, Alagbado, Lagos",
   parishPriest: "Rev. Fr. Vincent Chukwujekwu",
-  contactPhone: "+234 803 123 4567",
-  contactEmail: "office@stanthonyparish.org",
+  contactPhone: "08065625941",
+  contactEmail: "saccalagbado.com",
   bankDetails: {
     bankName: "Zenith Bank Plc",
     accountName: "St. Anthony Catholic Church - Mass Stipend",
@@ -35,7 +35,8 @@ const defaultSettings: ParishSettings = {
     { day: "Saturday", times: ["07:00 AM (Memorial of B.V.M)"] }
   ],
   confessionSchedule: "Saturdays after 7:00 AM Mass",
-  officeHours: "Monday - Friday: 9:00 AM - 4:00 PM",
+  officeHours: "Monday, Tuesday, Wednesday, Friday: 8:00 AM - 3:00 PM",
+  priestOfficeHours: "Monday, Wednesday, Friday: 10:00 AM - 3:00 PM",
   adminPasscode: "anthony2027" // Default admin passcode, can be changed in admin settings
 };
 

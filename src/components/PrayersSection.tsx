@@ -7,16 +7,64 @@ import {
   RotateCcw, 
   CheckCircle2, 
   CircleDot,
-  ArrowRight
+  ArrowRight,
+  ArrowLeft,
+  Languages
 } from 'lucide-react';
 import { PRAYERS } from '@/lib/prayerData';
-import { Prayer, RosaryMysteryGroup } from '@/lib/types';
+import { BilingualLine, Prayer, PrayerCategory, RosaryMysteryGroup } from '@/lib/types';
+
+const CATEGORIES: { id: 'all' | PrayerCategory; label: string }[] = [
+  { id: 'all', label: 'All Prayers' },
+  { id: 'rosary', label: 'Holy Rosary' },
+  { id: 'litany', label: 'Litanies' },
+  { id: 'devotion', label: 'Devotions' },
+  { id: 'stations', label: 'Stations of the Cross' },
+  { id: 'mass', label: 'Order of Mass' },
+  { id: 'benediction', label: 'Benediction' }
+];
+
+const CATEGORY_LABELS: Record<PrayerCategory, string> = {
+  rosary: 'Rosary',
+  litany: 'Litany',
+  devotion: 'Devotion',
+  stations: 'Stations of the Cross',
+  mass: 'Holy Mass',
+  benediction: 'Benediction'
+};
+
+type Language = 'en' | 'la';
+
+function BilingualLineView({ line, language }: { line: BilingualLine; language: Language }) {
+  if (line.role === 'rubric') {
+    return <p className="font-sans text-xs sm:text-sm italic text-red-800/80 leading-relaxed">{line.en}</p>;
+  }
+  const text = language === 'la' && line.la ? line.la : line.en;
+  const marker = line.role === 'priest' ? '℣.' : line.role === 'people' ? '℟.' : null;
+  return (
+    <div className="flex gap-2.5">
+      {marker ? (
+        <span className="w-5 shrink-0 text-red-800 font-bold" aria-label={line.role === 'priest' ? 'Priest' : 'People'}>
+          {marker}
+        </span>
+      ) : (
+        <span className="w-5 shrink-0" aria-hidden="true" />
+      )}
+      <p className={`whitespace-pre-line leading-relaxed ${line.role === 'priest' ? 'text-stone-800' : 'text-amber-950 font-semibold'}`}>
+        {text}
+      </p>
+    </div>
+  );
+}
 
 export function PrayersSection() {
-  const [selectedCategory, setSelectedCategory] = useState<'all' | 'rosary' | 'litany' | 'devotion'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<'all' | PrayerCategory>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [activePrayer, setActivePrayer] = useState<Prayer | null>(PRAYERS[0]); // Default to Holy Rosary
-  
+  const [language, setLanguage] = useState<Language>('en');
+  // Stations of the Cross: 0 = opening prayer, 1-14 = stations, 15 = closing prayer
+  const [stationStep, setStationStep] = useState(0);
+
   // Rosary Interactive State
   const [selectedMysteryIndex, setSelectedMysteryIndex] = useState(0);
 
@@ -69,15 +117,10 @@ export function PrayersSection() {
       <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-xs border border-stone-200 space-y-4">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center space-x-1.5 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0">
-            {[
-              { id: 'all', label: 'All Prayers' },
-              { id: 'rosary', label: 'Holy Rosary' },
-              { id: 'litany', label: 'Litanies' },
-              { id: 'devotion', label: 'Devotions' }
-            ].map(cat => (
+            {CATEGORIES.map(cat => (
               <button
                 key={cat.id}
-                onClick={() => setSelectedCategory(cat.id as typeof selectedCategory)}
+                onClick={() => setSelectedCategory(cat.id)}
                 className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
                   selectedCategory === cat.id
                     ? 'bg-amber-900 text-amber-50 shadow-xs'
@@ -117,6 +160,7 @@ export function PrayersSection() {
                     key={prayer.id}
                     onClick={() => {
                       setActivePrayer(prayer);
+                      setStationStep(0);
                       if (prayer.id === 'holy-rosary') {
                         setCurrentDecadeIndex(0);
                         setBeadCount(0);
@@ -152,9 +196,37 @@ export function PrayersSection() {
             <div className="bg-white rounded-2xl border border-stone-200 shadow-xs p-6 sm:p-8 space-y-6">
               {/* Prayer Title Header */}
               <div className="border-b border-stone-100 pb-4">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-amber-800 px-2 py-0.5 rounded-sm bg-amber-50 border border-amber-200/50">
-                  {activePrayer.category.toUpperCase()}
-                </span>
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-amber-800 px-2 py-0.5 rounded-sm bg-amber-50 border border-amber-200/50">
+                    {CATEGORY_LABELS[activePrayer.category]}
+                  </span>
+                  {activePrayer.bilingual && (
+                    <div
+                      role="group"
+                      aria-label="Language"
+                      className="flex items-center shrink-0 rounded-full bg-stone-100 p-0.5 text-xs font-semibold"
+                    >
+                      <Languages className="w-3.5 h-3.5 text-stone-500 mx-1.5" aria-hidden="true" />
+                      {([
+                        { id: 'en', label: 'English' },
+                        { id: 'la', label: 'Latin' }
+                      ] as const).map(opt => (
+                        <button
+                          key={opt.id}
+                          onClick={() => setLanguage(opt.id)}
+                          aria-pressed={language === opt.id}
+                          className={`px-3 py-1 rounded-full transition-colors ${
+                            language === opt.id
+                              ? 'bg-amber-900 text-amber-50 shadow-xs'
+                              : 'text-stone-600 hover:text-stone-900'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <h2 className="text-2xl sm:text-3xl font-serif font-bold text-stone-900 mt-2">
                   {activePrayer.title}
                 </h2>
@@ -346,6 +418,133 @@ export function PrayersSection() {
               {activePrayer.content && (
                 <div className="font-serif text-stone-800 text-base sm:text-lg leading-relaxed whitespace-pre-line bg-stone-50/50 p-5 rounded-2xl border border-stone-100">
                   {activePrayer.content}
+                </div>
+              )}
+
+              {/* STATIONS OF THE CROSS: one station at a time */}
+              {activePrayer.stations && (() => {
+                const { opening, closing, versicle, stations } = activePrayer.stations;
+                const lastStep = stations.length + 1;
+                const station = stationStep >= 1 && stationStep <= stations.length ? stations[stationStep - 1] : null;
+                const stepLabel = (step: number) =>
+                  step === 0 ? 'Opening Prayer' : step === lastStep ? 'Closing Prayer' : `Station ${step}`;
+
+                return (
+                  <div className="space-y-5">
+                    {/* Station picker */}
+                    <div className="space-y-2">
+                      <span className="text-xs font-semibold text-stone-500 block">Go to:</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {Array.from({ length: lastStep + 1 }).map((_, step) => {
+                          const isActive = stationStep === step;
+                          const isEnd = step === 0 || step === lastStep;
+                          return (
+                            <button
+                              key={step}
+                              onClick={() => setStationStep(step)}
+                              aria-label={stepLabel(step)}
+                              aria-current={isActive ? 'step' : undefined}
+                              className={`h-8 rounded-full text-xs font-bold transition-all ${isEnd ? 'px-3' : 'w-8'} ${
+                                isActive
+                                  ? 'bg-amber-900 text-white shadow-xs ring-2 ring-amber-300'
+                                  : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                              }`}
+                            >
+                              {step === 0 ? 'Opening' : step === lastStep ? 'Closing' : step}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {station ? (
+                      <div className="bg-gradient-to-br from-amber-50/70 to-stone-50 border border-amber-200/80 rounded-2xl p-5 sm:p-6 space-y-4 font-serif">
+                        <div className="flex items-center justify-between font-sans">
+                          <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">
+                            Station {station.number} of {stations.length}
+                          </span>
+                          <span className="text-xs font-semibold text-amber-800 bg-amber-100/70 px-2.5 py-0.5 rounded-full">
+                            {station.scripture}
+                          </span>
+                        </div>
+
+                        <h3 className="font-bold text-xl text-stone-900">{station.title}</h3>
+
+                        <div className="space-y-1 text-sm sm:text-base">
+                          <p className="font-sans text-xs italic text-red-800/80">Genuflect.</p>
+                          <p className="text-stone-800"><span className="text-red-800 font-bold mr-1.5">℣.</span>{versicle.call}</p>
+                          <p className="text-amber-950 font-semibold"><span className="text-red-800 font-bold mr-1.5">℟.</span>{versicle.response}</p>
+                        </div>
+
+                        <p className="text-stone-700 text-sm sm:text-base leading-relaxed">{station.reading}</p>
+
+                        <p className="text-stone-900 text-sm sm:text-base leading-relaxed italic border-l-2 border-amber-300 pl-3">
+                          {station.prayer1}
+                        </p>
+
+                        <p className="text-stone-900 text-sm sm:text-base leading-relaxed italic border-l-2 border-amber-300 pl-3">
+                          {station.prayer2}
+                        </p>
+
+                        <p className="font-sans text-xs italic text-red-800/80">Our Father, Hail Mary, Glory Be.</p>
+
+                        <div className="border-t border-amber-200/80 pt-3">
+                          <span className="font-sans text-[10px] uppercase font-bold tracking-wider text-stone-500 block mb-1">
+                            Stabat Mater
+                          </span>
+                          <p className="text-stone-700 text-sm italic whitespace-pre-line leading-relaxed">{station.stabatMater}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="font-serif text-stone-800 text-base sm:text-lg leading-relaxed whitespace-pre-line bg-stone-50/50 p-5 rounded-2xl border border-stone-100">
+                        <h3 className="font-bold text-xl text-stone-900 mb-3">{stepLabel(stationStep)}</h3>
+                        {stationStep === 0 ? opening : closing}
+                      </div>
+                    )}
+
+                    {/* Previous / next */}
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => setStationStep(s => Math.max(0, s - 1))}
+                        disabled={stationStep === 0}
+                        className="flex-1 py-3 rounded-xl text-sm font-semibold border border-stone-200 text-stone-700 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      >
+                        <ArrowLeft className="w-4 h-4" />
+                        <span>Previous</span>
+                      </button>
+                      <button
+                        onClick={() => setStationStep(s => Math.min(lastStep, s + 1))}
+                        disabled={stationStep === lastStep}
+                        className="flex-1 py-3 rounded-xl font-serif text-sm font-bold bg-amber-900 text-amber-50 hover:bg-amber-950 disabled:opacity-40 disabled:cursor-not-allowed shadow-md flex items-center justify-center gap-2"
+                      >
+                        <span>{stationStep < lastStep ? `Next: ${stepLabel(stationStep + 1)}` : 'Finished'}</span>
+                        {stationStep < lastStep && <ArrowRight className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* BILINGUAL TEXTS (Order of Mass, Benediction) */}
+              {activePrayer.bilingual && (
+                <div className="space-y-6 font-serif text-sm sm:text-base" lang={language === 'la' ? 'la' : 'en'}>
+                  {activePrayer.bilingual.map(section => (
+                    <section key={section.title} className="space-y-3">
+                      <div className="border-b border-stone-100 pb-1.5">
+                        <h3 className="font-bold text-lg text-stone-900">
+                          {language === 'la' ? section.titleLatin : section.title}
+                        </h3>
+                        {language === 'la' && (
+                          <p className="font-sans text-xs text-stone-500" lang="en">{section.title}</p>
+                        )}
+                      </div>
+                      <div className="space-y-2.5">
+                        {section.lines.map((line, idx) => (
+                          <BilingualLineView key={idx} line={line} language={language} />
+                        ))}
+                      </div>
+                    </section>
+                  ))}
                 </div>
               )}
             </div>

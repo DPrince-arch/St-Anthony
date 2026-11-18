@@ -1,4 +1,5 @@
 import { Prayer } from './types';
+import { BENEDICTION, ORDER_OF_MASS, STATIONS_OF_THE_CROSS } from './liturgyPrayers';
 
 export const PRAYERS: Prayer[] = [
   {
@@ -301,5 +302,8 @@ who art all-good and deserving of all my love.
 I firmly resolve, with the help of Thy grace,
 to sin no more and to avoid the near occasion of sin.
 Amen.`
-  }
+  },
+  STATIONS_OF_THE_CROSS,
+  ORDER_OF_MASS,
+  BENEDICTION,
 ];

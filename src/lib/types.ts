@@ -65,18 +65,61 @@ export interface LitanyVerse {
   response: string;
 }
 
+export type PrayerCategory = 'rosary' | 'litany' | 'devotion' | 'stations' | 'mass' | 'benediction';
+
+export interface Station {
+  number: number;
+  title: string;
+  /** Scripture reference to read or recall at this station. */
+  scripture: string;
+  reading: string;
+  prayer1: string;
+  prayer2: string;
+  /** The verse of the Stabat Mater sung while moving to the next station. */
+  stabatMater: string;
+}
+
+export interface StationsOfTheCross {
+  opening: string;
+  stations: Station[];
+  closing: string;
+}
+
+/**
+ * One line of a prayer that can be shown in English or Latin.
+ * - priest: said by the priest or leader (marked ℣.)
+ * - people: the congregation's response (marked ℟.)
+ * - all: said by everyone together
+ * - rubric: an instruction, always shown in English; `la` is ignored
+ */
+export interface BilingualLine {
+  role: 'priest' | 'people' | 'all' | 'rubric';
+  en: string;
+  la?: string;
+}
+
+export interface BilingualSection {
+  title: string;
+  titleLatin: string;
+  lines: BilingualLine[];
+}
+
 export interface Prayer {
   id: string;
   title: string;
-  category: 'rosary' | 'litany' | 'devotion' | 'stations' | 'mass';
+  category: PrayerCategory;
   subtitle?: string;
   description?: string;
   content?: string;
   verses?: LitanyVerse[];
   mysteries?: RosaryMysteryGroup[];
+  stations?: StationsOfTheCross;
+  /** Prayers with this set get an English / Latin toggle. */
+  bilingual?: BilingualSection[];
 }
 
-export type BookingType = 'mass_intention' | 'thanksgiving' | 'priest_appointment';
+import type { BookingType } from './bookingCatalog';
+export type { BookingType };
 export type BookingStatus = 'pending' | 'approved' | 'rejected' | 'completed';
 
 export interface Booking {
@@ -95,6 +138,8 @@ export interface Booking {
   appointmentReason?: 'spiritual_direction' | 'confession' | 'counseling' | 'sick_call' | 'other';
   preferredTimeSlot?: string;
   notes?: string;
+  /** Type-specific answers (e.g. deceasedName, brideName, amount), keyed by catalog field name. */
+  details?: Record<string, string>;
   hasReceipt?: boolean;
   receiptUploadedAt?: string;
   // Admin fields
@@ -140,6 +185,7 @@ export interface ParishSettings {
   }[];
   confessionSchedule: string;
   officeHours: string;
+  priestOfficeHours: string;
   adminPasscode: string;
 }
 

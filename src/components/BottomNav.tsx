@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutGrid, BookOpen, Heart, CalendarPlus, Megaphone, Shield } from 'lucide-react';
+import { LayoutGrid, BookOpen, Heart, CalendarPlus, HandCoins, Megaphone, Shield } from 'lucide-react';
 
 interface BottomNavProps {
   unreadAnnouncementsCount?: number;
@@ -17,6 +17,7 @@ export function BottomNav({ unreadAnnouncementsCount = 0 }: BottomNavProps) {
     { href: '/readings', label: 'Readings', icon: BookOpen },
     { href: '/prayers', label: 'Prayers', icon: Heart },
     { href: '/bookings', label: 'Bookings', icon: CalendarPlus },
+    { href: '/payments', label: 'Payments', icon: HandCoins },
     { href: '/announcements', label: 'Notices', icon: Megaphone, badge: unreadAnnouncementsCount > 0 },
     { href: '/admin', label: 'Admin', icon: Shield }
   ];
@@ -60,7 +61,7 @@ export function BottomNav({ unreadAnnouncementsCount = 0 }: BottomNavProps) {
               <Link
                 key={tab.href}
                 href={tab.href}
-                className={`flex flex-col items-center py-1.5 px-2 rounded-xl transition-all relative ${
+                className={`flex flex-col items-center py-1.5 px-1 sm:px-2 rounded-xl transition-all relative ${
                   isActive
                     ? 'text-amber-900 font-semibold'
                     : 'text-stone-400 hover:text-stone-600'
