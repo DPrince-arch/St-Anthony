@@ -105,8 +105,14 @@ export const MASS_SCHEDULE_OPTIONS = [
   'Tuesday, 06:30 AM',
   'Wednesday, 06:30 PM',
   'Thursday, 06:30 AM (Followed by Adoration)',
+  'Thursday, 09:00 AM',
   'Friday, 06:30 AM',
   'Saturday, 07:00 AM (Memorial of B.V.M)',
+  'Special Requiem Mass (time to be agreed with the parish office)',
+  'Special Birthday Mass (time to be agreed with the parish office)',
+  'Special Wake Keep (time to be agreed with the parish office)',
+  'Special Funeral Mass (time to be agreed with the parish office)',
+  'Saturday, 10:00 AM (Wedding Mass)',
 ].map(value => ({ value, label: value }));
 
 const INTENTION_TYPE_OPTIONS = [
@@ -443,11 +449,10 @@ export const BOOKING_CATALOG: BookingTypeConfig[] = [
         kind: 'select',
         required: true,
         options: [
-          { value: '09:00 AM - 10:00 AM', label: '09:00 AM - 10:00 AM (Morning Office)' },
           { value: '10:00 AM - 11:00 AM', label: '10:00 AM - 11:00 AM' },
           { value: '11:30 AM - 12:30 PM', label: '11:30 AM - 12:30 PM' },
-          { value: '04:00 PM - 05:00 PM', label: '04:00 PM - 05:00 PM (Afternoon Office)' },
-          { value: '05:00 PM - 06:00 PM', label: '05:00 PM - 06:00 PM' },
+          { value: '01:00 PM - 02:00 PM', label: '01:00 PM - 02:00 PM' },
+          { value: '02:00 PM - 03:00 PM', label: '02:00 PM - 03:00 PM' },
         ],
       },
       {
@@ -488,10 +493,10 @@ export const BOOKING_CATALOG: BookingTypeConfig[] = [
   {
     id: 'harvest_levy',
     group: 'dues',
-    title: 'Harvest Levy',
-    subtitle: 'Your annual harvest levy',
+    title: 'Harvest Levy and Pledges',
+    subtitle: 'Your annual harvest levy and pledges to the parish',
     description:
-      'Record your harvest levy payment for the year, as an individual, a family or a parish society.',
+      'Record your harvest levy or pledge payment for the year, as an individual, a family or a parish society.',
     receipt: 'required',
     dateLabel: 'Date of Payment',
     pastDate: true,

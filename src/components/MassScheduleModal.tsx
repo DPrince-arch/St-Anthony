@@ -18,7 +18,7 @@ export function MassScheduleModal({ isOpen, onClose, settings }: MassScheduleMod
     { day: "Monday", times: ["06:30 AM", "06:30 PM"] },
     { day: "Teusday", times: ["06:30 AM"]},
     { day: "Wednesday", times: ["06:30 PM"]},
-    { day: "Thursday", times: ["06:30 AM, Followed by Adoration"]},
+    { day: "Thursday", times: ["06:30 AM, Followed by Adoration", "09:00 AM"]},
     { day: "Friday:", times: ["06:30 AM"]},
     { day: "Saturday", times: ["07:00 AM (Memorial of B.V.M)"] }
   ];

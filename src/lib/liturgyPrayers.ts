@@ -25,6 +25,10 @@ export const STATIONS_OF_THE_CROSS: Prayer = {
     Because by your holy cross you have redeemed the world.\n
     At the Cross her station keeping,\nstood the mournful Mother weeping,\nclose to Jesus to the last.
 `,
+    versicle: {
+      call: 'We adore you, O Christ, and we praise you.',
+      response: 'Because by your holy cross you have redeemed the world.'
+    },
     stations: [
       {
         number: 1,
@@ -33,9 +37,9 @@ export const STATIONS_OF_THE_CROSS: Prayer = {
         reading:
           'Pilate sought to release him, but the Jews cried out, “if you release this man, you are not Caesar’s friend; everyone who make himself a king sets himself against Caesar.” When Pilate heard these words, he brought Jesus out and said to the Jews “Here is your king!” They cried out away with him, away with him, crucify him!” Pilate said to them, “shall I crucify your king?” The chief priests answered, “We have no king but Caesar!” Then he handed him over to them to be crucified.',
         prayer1:
-          'CHRIST SPEAKS \nIn Pilate’s hands, my friend, I see my father’s will it is true that Pilate is unjust but he is the lawful governor and he has power over me; and so the son of God obeys a son of man if I will bow to Pilate’s rule, because this is my Father’s will can you refuse obedience to those whom I have placed over you?',
+          'CHRIST SPEAKS: In Pilate’s hands, my friend, I see my father’s will it is true that Pilate is unjust but he is the lawful governor and he has power over me; and so the son of God obeys a son of man if I will bow to Pilate’s rule, because this is my Father’s will can you refuse obedience to those whom I have placed over you?',
         prayer2:
-          'MAN RESPONDS \nLord Jesus, obedience cost you your life for me, it costs an act of will – no more and yet, how hard it is for me to bend remove the blinders from my eyes that I may see that it is you whom I obey in all who govern me Lord it is you.',
+          'MAN RESPONDS: Lord Jesus, obedience cost you your life for me, it costs an act of will – no more and yet, how hard it is for me to bend remove the blinders from my eyes that I may see that it is you whom I obey in all who govern me Lord it is you.',
           stabatMater: 'Through her heart, His sorrow sharing,\nall His bitter anguish bearing,\nnow at length the sword has passed.',
       },
       {
@@ -45,9 +49,9 @@ export const STATIONS_OF_THE_CROSS: Prayer = {
         reading:
           'So they took Jesus, and he went out, bearing his own cross, to the place of a skull, which is called in Hebrew Golgotha.',
         prayer1:
-          'CHRIST SPEAKS \nThis cross this chunk of tree, is what my father chose for me. the crosses you must bear are largely products of your daily life. Your weakness, dissatisfaction, insufficiency. And yet my father, your father chose them too, for you. Receive them from his hands.',
+          'CHRIST SPEAKS: This cross this chunk of tree, is what my father chose for me. the crosses you must bear are largely products of your daily life. Your weakness, dissatisfaction, insufficiency. And yet my father, your father chose them too, for you. Receive them from his hands.',
         prayer2:
-          'MAN RESPONDS \nLord Jesus, I take my daily cross I welcome the monotony, discomfort of all kinds, my disappointments, tensions, setback, cares, worries, all of them. I accept them remind me often that in carrying my cross, I am carrying yours with you.',
+          'MAN RESPONDS: Lord Jesus, I take my daily cross I welcome the monotony, discomfort of all kinds, my disappointments, tensions, setback, cares, worries, all of them. I accept them remind me often that in carrying my cross, I am carrying yours with you.',
         stabatMater: 'O how sad and sore distressed\nwas that Mother, highly blest,\nof the sole-begotten One.',
       },
       {
@@ -57,9 +61,9 @@ export const STATIONS_OF_THE_CROSS: Prayer = {
         reading:
           'The Lord God has opened my ear, and I was not rebellious, I turned not backward. I gave my back to the smiters, and my cheeks to those who pulled out the beard; I did not hide my face from shame and spitting. For the Lord God helps me; therefore I have not been confounded.',
         prayer1:
-          'CHRIST SPEAKS \nThe God who made the universe and holds it in existence the God who directs the movement of the cosmos, this God is, as man, too weak to bear a piece of timber. That is the will of my father I could not be your model otherwise. If you would be my follower you also must accept without complaint your human limitations.',
+          'CHRIST SPEAKS: The God who made the universe and holds it in existence the God who directs the movement of the cosmos, this God is, as man, too weak to bear a piece of timber. That is the will of my father I could not be your model otherwise. If you would be my follower you also must accept without complaint your human limitations.',
         prayer2:
-          'MAN RESPONDS \nLord Jesus, how can I refuse? I willingly accept my weakness irritation and my moods, my headaches and fatigues, my difficulties in work and home all my defects of body, mind and soul. These “handicaps” of my humanity are your will for me I accept them gladly after your fall, you picked yourself up now pick me up, Lord.',
+          'MAN RESPONDS: Lord Jesus, how can I refuse? I willingly accept my weakness irritation and my moods, my headaches and fatigues, my difficulties in work and home all my defects of body, mind and soul. These “handicaps” of my humanity are your will for me I accept them gladly after your fall, you picked yourself up now pick me up, Lord.',
         stabatMater: 'Christ above in torment hangs,\nshe beneath beholds the pangs\nof her dying glorious Son.',
       },
       {
@@ -68,8 +72,8 @@ export const STATIONS_OF_THE_CROSS: Prayer = {
         scripture: 'Luke 2:34-35',
         reading:
           '“Behold, this child is set for the fall and rising of many in Israel and for a sign that is spoken against, and a sword will pierce through your own soul that thoughts out of my hearts may be revealed”',
-        prayer1: 'CHRIST SPEAKS \nMy mother sees me whipped. She sees me kicked and driven like a beast. She sees me disgraced. But she did not utter a word of protest or complaint. She shares my martyrdom.',
-        prayer2: 'MAN RESPONDS \nLord Jesus, it is harder to watch the pains of those we love than to bear our own pains. To carry my cross after you I too must stand and watch the suffering s of my dear ones. I must watch the poverty of my people, their tattered clothes, malnutrition, no water, no electricity, and what is more, less hope for the future. And, I must let them watch time too. I do believe for those who love you, all things work together unto good. They must.',
+        prayer1: 'CHRIST SPEAKS: My mother sees me whipped. She sees me kicked and driven like a beast. She sees me disgraced. But she did not utter a word of protest or complaint. She shares my martyrdom.',
+        prayer2: 'MAN RESPONDS: Lord Jesus, it is harder to watch the pains of those we love than to bear our own pains. To carry my cross after you I too must stand and watch the suffering s of my dear ones. I must watch the poverty of my people, their tattered clothes, malnutrition, no water, no electricity, and what is more, less hope for the future. And, I must let them watch time too. I do believe for those who love you, all things work together unto good. They must.',
         stabatMater: 'Is there one who would not weep,\nwhelmed in miseries so deep,\nChrist\'s dear Mother to behold?',
       },
       {
@@ -79,8 +83,8 @@ export const STATIONS_OF_THE_CROSS: Prayer = {
         reading:
           'And they compelled a passer-by, simon of Cyrene, who was coming in from the country, the father of Alexander, and Rufus, to carry his cross.',
         prayer1:
-          'CHRIST SPEAKS \nI am physically weak I can no longer bear the cross alone, so, they compel simon to help me and indeed he helps me why not you too? Lift the burden from another back each time you do that, you lift the cross’s awful weight that crushes me',
-        prayer2: 'MAN RESPONDS \nLord, make me realise that each time I pick up an object off the floor, assist my colleagues in some small task, each time I lend my hand in anyway. It maters not to whom my name is Simon, and the kindness I extend to them I really give to you',
+          'CHRIST SPEAKS: I am physically weak I can no longer bear the cross alone, so, they compel simon to help me and indeed he helps me why not you too? Lift the burden from another back each time you do that, you lift the cross’s awful weight that crushes me',
+        prayer2: 'MAN RESPONDS: Lord, make me realise that each time I pick up an object off the floor, assist my colleagues in some small task, each time I lend my hand in anyway. It maters not to whom my name is Simon, and the kindness I extend to them I really give to you',
           stabatMater: 'Can the human heart refrain\nfrom partaking in her pain,\nin that Mother\'s pain untold?',
       },
       {
@@ -90,8 +94,8 @@ export const STATIONS_OF_THE_CROSS: Prayer = {
         reading:
           'Who has believed what we have heard? And to whom has the arm of the Lord been revealed? For he grew up before him like a young plant, and like a root out of dry ground; he had no form or comeliness that we should look at him, and no beauty that we should desire him. He was despised and rejected by men; a man of sorrows, and acquainted with grief, and as one from whom men hide their faces he was despised and we esteemed him not.',
         prayer1:
-          'CHRIST SPEAKS \nCan you be brave enough to wipe my bloody face? “where is your face?” you may ask me. and I will answer; “everywhere: at home whenever eyes fill up with tears at work when tensions rise in the classroom, on playgrounds, in the remote and dirty villages, the court, the hospitals, the jails, wherever suffering exists, my face is there and there I look for you to wipe away my blood and tears.',
-        prayer2: 'MAN RESPONDS \nLord, this is hard it needs courage and self sacrifice it is an uncomfortable job but I will not run away from it come and act in me and not in me alone – in all men so that we may reveal not your bloody but your glorious face on earth.',
+          'CHRIST SPEAKS: Can you be brave enough to wipe my bloody face? “where is your face?” you may ask me. and I will answer; “everywhere: at home whenever eyes fill up with tears at work when tensions rise in the classroom, on playgrounds, in the remote and dirty villages, the court, the hospitals, the jails, wherever suffering exists, my face is there and there I look for you to wipe away my blood and tears.',
+        prayer2: 'MAN RESPONDS: Lord, this is hard it needs courage and self sacrifice it is an uncomfortable job but I will not run away from it come and act in me and not in me alone – in all men so that we may reveal not your bloody but your glorious face on earth.',
         stabatMater: 'Bruised, derided, cursed, defiled,\nshe beheld her tender Child\nall with bloody scourges rent.',
       },
       {
@@ -101,8 +105,8 @@ export const STATIONS_OF_THE_CROSS: Prayer = {
         reading:
           'Surely he has borne our griefs and carried our sorrows; yet we esteemed him stricken, smitten by God, and afflicted. But he was wounded for our transgressions, he was bruised for our iniquities; upon him was the chastisement that made us whole, and with his stripes we are healed. All we, like sheep, have gone astray; we have turned everyone to his own way; and the lord has laid on him the iniquity of us all.',
         prayer1:
-          'CHRIST SPEAKS \nThis seventh step, my child, is one that tests your will from this fall learn to persevere in doing good, never say, I can’t go on. Come to me and I will give you rest trust me and carry on.',
-        prayer2: 'MAN RESPONDS \nDifficulties remain difficult, Lord! When failure presses heavily on me and I am desolate, discouraged, stretch out your hand to lift me up. Alone, there is nothing I can do. With you, I can do all things, I will.',
+          'CHRIST SPEAKS: This seventh step, my child, is one that tests your will from this fall learn to persevere in doing good, never say, I can’t go on. Come to me and I will give you rest trust me and carry on.',
+        prayer2: 'MAN RESPONDS: Difficulties remain difficult, Lord! When failure presses heavily on me and I am desolate, discouraged, stretch out your hand to lift me up. Alone, there is nothing I can do. With you, I can do all things, I will.',
           stabatMater: 'For the sins of His own nation,\nsaw Him hang in desolation,\ntill His spirit forth He sent.',
       },
       {
@@ -112,8 +116,8 @@ export const STATIONS_OF_THE_CROSS: Prayer = {
         reading:
           'And there followed him a great multitude of people, and of women who bewailed and lamented him. But Jesus turning to them said,  “Daughters of Jerusalem, do not weep for me, but weep for yourselves and for your children. for behold, the days are coming when they will say, ‘Blessed are the barren, and the wombs that never bore, and the breasts that never gave suck’. Then they will begin to say to the mountains, ‘Fall on us’; to the hills cover us’. For if they do this when the wood is green, what will happen when it is dry?"',
         prayer1:
-          'CHRIST SPEAKS \nHow often have I longed to gather my children. into one communion with me! but they refused and now these women weep for me. I mourn for them and their sorrows that will come. My dear child, you can really be more gentle you too can be kind.',
-        prayer2: 'MAN RESPONDS \nLord, teach me, help me to learn, when I would snap at those who hurt me with their ridicule those who misunderstand me those whom I think hinder my progress with some misguided helpfulness. Those who intrude upon my privacy those who restrict my freedom and liberty. Then help me curb my tongue may gentleness become my cloak.',
+          'CHRIST SPEAKS: How often have I longed to gather my children. into one communion with me! but they refused and now these women weep for me. I mourn for them and their sorrows that will come. My dear child, you can really be more gentle you too can be kind.',
+        prayer2: 'MAN RESPONDS: Lord, teach me, help me to learn, when I would snap at those who hurt me with their ridicule those who misunderstand me those whom I think hinder my progress with some misguided helpfulness. Those who intrude upon my privacy those who restrict my freedom and liberty. Then help me curb my tongue may gentleness become my cloak.',
         stabatMater: 'O thou Mother! fount of love!\nTouch my spirit from above,\nmake my heart with thine accord.',
       },
       {
@@ -123,8 +127,8 @@ export const STATIONS_OF_THE_CROSS: Prayer = {
         reading:
           'By oppression and judgement he was taken away; and as for his generation, who considered that he was cut out of the land of the living, stricken for the transgression of my people? And they made his grace with the wicked and with a rich man in his death, although he had done no violent action and there was no deceit in his mouth. Yet it was the will of the Lord to bruse him; he has put him to grief; when he makes himself an offering for sin he shall see his offspring, he shall prolong his days; the will of the Lord shall prosper in his hand.',
         prayer1:
-          'CHRIST SPEAKS \nI have fallen down again completely drained of strength my body cannot move and yet my will is mine and so is yours. My child, this one thing is certain, your body may be broken but no force on earth and none in hell can take away your will, your will is yours.',
-        prayer2: 'MAN RESPONDS \nMy Lord, after a moment rest you took off again and staggered on. I can do the same because my will is mine when all my strength is gone and guilt and self-reproach press me to earth and seem to hold me fast, when I am pressed down by the consideration that I am of a fallen race protect me from the sin of judas save me from despair Lord, never let me feel that any sin of mine is greater than your love. No matter what my past has been, I can begin anew.',
+          'CHRIST SPEAKS: I have fallen down again completely drained of strength my body cannot move and yet my will is mine and so is yours. My child, this one thing is certain, your body may be broken but no force on earth and none in hell can take away your will, your will is yours.',
+        prayer2: 'MAN RESPONDS: My Lord, after a moment rest you took off again and staggered on. I can do the same because my will is mine when all my strength is gone and guilt and self-reproach press me to earth and seem to hold me fast, when I am pressed down by the consideration that I am of a fallen race protect me from the sin of judas save me from despair Lord, never let me feel that any sin of mine is greater than your love. No matter what my past has been, I can begin anew.',
         stabatMater: 'Make me feel as thou hast felt;\nmake my soul to glow and melt\nwith the love of Christ my Lord.',
       },
       {
@@ -134,8 +138,8 @@ export const STATIONS_OF_THE_CROSS: Prayer = {
         reading:
           'When the soldiers had crucified Jesus they took his garments and made four parts, one for each soldiers; also his tunic, but the tunic was without seam, woven from top to bottom; so they said to one another, “Let us not tear it, but cast lots for it to see whose it shall be. “This was to fulfil the scripture, “They parted my garments among them, and for my clothing they cast lots”.',
         prayer1:
-          'CHRIST SPEAKS \nBeholds the poorest king that ever lived before the creatures of my own hand I stand stripped the cross – my deathbed is not even my own possessing nothing  I own all I own my father’s love you too own everything so do not worry about your food, your clothes and your life.',
-        prayer2: 'MAN RESPONDS \nLord, strip me of the craving for prestige position, wealth and priviledges. Root out of me all traces of envy of my neighbour who has more than I. release me from the vice of pride, my longing to exalt myself, teach me that there is something called humility may I be poor in spirit Lord.',
+          'CHRIST SPEAKS: Beholds the poorest king that ever lived before the creatures of my own hand I stand stripped the cross – my deathbed is not even my own possessing nothing  I own all I own my father’s love you too own everything so do not worry about your food, your clothes and your life.',
+        prayer2: 'MAN RESPONDS: Lord, strip me of the craving for prestige position, wealth and priviledges. Root out of me all traces of envy of my neighbour who has more than I. release me from the vice of pride, my longing to exalt myself, teach me that there is something called humility may I be poor in spirit Lord.',
         stabatMater: 'Holy Mother! pierce me through,\nin my heart each wound renew\nof my Saviour crucified.',
       },
       {
@@ -145,9 +149,9 @@ export const STATIONS_OF_THE_CROSS: Prayer = {
         reading:
           'There they crucified him, and with him two others, one on either side and Jesus between them. Pilate also wrote a title and put it on the cross; it read, “Jesus of Nazareth, the king of the Jews.”',
         prayer1:
-          'CHRIST SPEAKS \nMy executioners pressed the nail into my hand until it stabbed my flesh. Then a heavy hammer-blow smashed. And pain exploded like a bomb of fire in my brain then they seized my other arm. And my legs and each time agony again exploded all – for you.',
+          'CHRIST SPEAKS: My executioners pressed the nail into my hand until it stabbed my flesh. Then a heavy hammer-blow smashed. And pain exploded like a bomb of fire in my brain then they seized my other arm. And my legs and each time agony again exploded all – for you.',
         prayer2:
-          'MAN RESPONDS \nMy God am I worth all this? What can I give you in return? Here and now I accept for the rest of my life whatever sickness, torment, agony that will come to me you suffered to be my redeemer I will suffer to be a co-redeemer of my fellowmen.',
+          'MAN RESPONDS: My God am I worth all this? What can I give you in return? Here and now I accept for the rest of my life whatever sickness, torment, agony that will come to me you suffered to be my redeemer I will suffer to be a co-redeemer of my fellowmen.',
         stabatMater: 'Let me share with thee His pain,\nwho for all my sins was slain,\nwho for me in torments died.',
       },
       {
@@ -157,9 +161,9 @@ export const STATIONS_OF_THE_CROSS: Prayer = {
         reading:
           'That the scriptures might be fulfilled Jesus said: I thirst. A bowl of vinegar stood there; so they put a sponge of vinegar on hyssop and held it to his mouth. When jesus had received the vinegar, he said, “it is finished”, and he bowed his head and gave up his spirit.',
         prayer1:
-          'CHRIST SPEAKS \nNow, the cross has become a pulpit listen to the good news I proclaim from it:-“Forgive them, father you will be with me in paradise there is your mother, there your son, I thirst, it is complete.',
+          'CHRIST SPEAKS: Now, the cross has become a pulpit listen to the good news I proclaim from it:-“Forgive them, father you will be with me in paradise there is your mother, there your son, I thirst, it is complete.',
         prayer2:
-          'MAN RESPONDS \nLord Jesus, what can I say or do? I offer you my death. I accept now the time and kind of death in store for me I offer you my death for my own sins and those of all my fellowmen.',
+          'MAN RESPONDS: Lord Jesus, what can I say or do? I offer you my death. I accept now the time and kind of death in store for me I offer you my death for my own sins and those of all my fellowmen.',
         stabatMater: 'Let me mingle tears with thee,\nmourning Him who mourned for me,\nall the days that I may live.',
       },
       {
@@ -169,9 +173,9 @@ export const STATIONS_OF_THE_CROSS: Prayer = {
         reading:
           'After this Joseph of Arimathea who was a disciple of Jesus, but secretly, for fear of the Jews, asked pilate that the might take away the body of Jesus, and Pilate gave him leave. So he came and took away his body. Nicodemus also, who had at first come to him by night, came bringing a mixture of myrrh and aloes, about a hundred pounds weight.',
         prayer1:
-          'CHRIST SPEAKS The sacrifices is done. Yes, my mass is complete. But not my mother’s and not yours those you love will part from you and grief will come to you. You too will die one day-a day you do not know. Are you prepared for it?',
+          'CHRIST SPEAKS: The sacrifices is done. Yes, my mass is complete. But not my mother’s and not yours those you love will part from you and grief will come to you. You too will die one day-a day you do not know. Are you prepared for it?',
         prayer2:
-          'MAN RESPONDS \nLord, help me to accept the partings that must come from friends who go away, and most of all my dear ones when you shall call them to eternal life. Help me to get ready so that the D-Day whenever it comes will not be a shock to me.',
+          'MAN RESPONDS: Lord, help me to accept the partings that must come from friends who go away, and most of all my dear ones when you shall call them to eternal life. Help me to get ready so that the D-Day whenever it comes will not be a shock to me.',
         stabatMater: 'By the Cross with thee to stay,\nthere with thee to weep and pray,\nis all I ask of thee to give.',
       },
       {
@@ -181,9 +185,9 @@ export const STATIONS_OF_THE_CROSS: Prayer = {
         reading:
           'They took the Body of Jesus, and bound it in lines clothes with the spices, as is the burial customs of the Jews. Now in the place where he was crucified there was a garden, and in the garden a new tomb where no one had ever been laid, so because of the Jewish day of preparation, as the tomb was close at hand, they laid Jesus there.',
         prayer1:
-          'CHRIST SPEAKS \nSo ends my mortal life but now another life begins for Mary and for Magdalene for Peter and John for you my work as man is done. My work within and through the church must now commence. I look to you. You are my friend you are my apostle.',
+          'CHRIST SPEAKS: So ends my mortal life but now another life begins for Mary and for Magdalene for Peter and John for you my work as man is done. My work within and through the church must now commence. I look to you. You are my friend you are my apostle.',
         prayer2: 
-          'MAN RESPONDS \nLord Jesus, it is hard to be your apostle the demands are great. You have completed your work, what is left is mine, that of my fellowmen that of your church. The teachings you could not impart, let me impart. The sufferings you could not bear, let me bear. The work of love you could not do in you short life on earth. Let me do - all through you for you are all in all.',
+          'MAN RESPONDS: Lord Jesus, it is hard to be your apostle the demands are great. You have completed your work, what is left is mine, that of my fellowmen that of your church. The teachings you could not impart, let me impart. The sufferings you could not bear, let me bear. The work of love you could not do in you short life on earth. Let me do - all through you for you are all in all.',
           stabatMater: 'While my body here decays,\ntmay my soul thy goodness praise,\nsafe in Paradise with thee. Amen',
       },
     ],

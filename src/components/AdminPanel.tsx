@@ -26,6 +26,7 @@ import {
   BookingType
 } from '@/lib/types';
 import { todayInParish } from '@/lib/dates';
+import { RETENTION_DAYS, scheduledDeletionDate } from '@/lib/retentionPolicy';
 import {
   catalogForSection,
   MASS_SCHEDULE_OPTIONS,
@@ -174,9 +175,15 @@ export function AdminPanel({ announcements, settings }: AdminPanelProps) {
 
   // Change Booking Status
   const handleUpdateBookingStatus = async (id: string, newStatus: BookingStatus) => {
+    if (
+      newStatus === 'rejected' &&
+      !confirm(`Reject this booking? Its receipt will be deleted now, and the booking itself in ${RETENTION_DAYS} days.`)
+    ) {
+      return;
+    }
     setAdminActionLoading(true);
     try {
-      const adminNote = newStatus === 'approved' 
+      const adminNote = newStatus === 'approved'
         ? "Stipend verified. Added to liturgical intentions." 
         : newStatus === 'rejected' 
         ? "Unable to verify stipend receipt. Please contact parish office." 
@@ -451,6 +458,17 @@ export function AdminPanel({ announcements, settings }: AdminPanelProps) {
       {/* SUB-SECTION 1: BOOKINGS & INTENTIONS MANAGER */}
       {adminTab === 'bookings' && (
         <div className="space-y-4">
+          {/* Retention notice */}
+          <div className="rounded-2xl border border-amber-200 bg-amber-50/60 px-4 py-3 text-xs text-amber-900 flex items-start gap-2">
+            <Clock className="w-4 h-4 shrink-0 mt-0.5 text-amber-700" />
+            <p>
+              Approved and rejected bookings are <strong>deleted automatically {RETENTION_DAYS} days</strong> after
+              the decision, together with their receipts. Approved Masses are kept until {RETENTION_DAYS} days after
+              the Mass date. Rejected receipts are deleted immediately. Record anything you need to keep (e.g. tithes
+              in the parish register) before then.
+            </p>
+          </div>
+
           {/* Metrics summary */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
@@ -658,14 +676,20 @@ export function AdminPanel({ announcements, settings }: AdminPanelProps) {
                         </div>
                       ) : (
                         <div className="py-6 text-stone-400 text-xs italic">
-                          No receipt attached
+                          {b.receiptDeletedAt ? 'Receipt deleted after rejection' : 'No receipt attached'}
                         </div>
                       )}
                     </div>
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex items-center justify-end space-x-2 pt-3 border-t border-stone-100">
+                  <div className="flex flex-wrap items-center justify-end gap-2 pt-3 border-t border-stone-100">
+                    {scheduledDeletionDate(b) && (
+                      <span className="mr-auto text-[11px] text-stone-500 flex items-center gap-1">
+                        <Clock className="w-3.5 h-3.5 text-stone-400" />
+                        Auto-deletes on <strong className="text-stone-700">{scheduledDeletionDate(b)}</strong>
+                      </span>
+                    )}
                     {b.status !== 'approved' && (
                       <button
                         onClick={() => handleUpdateBookingStatus(b.id, 'approved')}

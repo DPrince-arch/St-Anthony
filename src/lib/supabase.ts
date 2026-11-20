@@ -20,14 +20,21 @@ export type BookingRow = {
   details: Record<string, string>;
   receipt_path: string | null;
   receipt_uploaded_at: string | null;
+  receipt_deleted_at: string | null;
+  decided_at: string | null;
   status: BookingStatus;
   admin_notes: string | null;
   created_at: string;
 };
 
-type BookingInsert = Omit<BookingRow, 'id' | 'created_at' | 'status' | 'details'> & {
+type BookingInsert = Omit<
+  BookingRow,
+  'id' | 'created_at' | 'status' | 'details' | 'receipt_deleted_at' | 'decided_at'
+> & {
   id?: string;
   details?: Record<string, string>;
+  receipt_deleted_at?: string | null;
+  decided_at?: string | null;
   created_at?: string;
   status?: BookingStatus;
 };
@@ -92,6 +99,8 @@ export function toBooking(row: BookingRow): Booking {
     details: row.details && Object.keys(row.details).length > 0 ? row.details : undefined,
     hasReceipt: Boolean(row.receipt_path),
     receiptUploadedAt: row.receipt_uploaded_at ?? undefined,
+    receiptDeletedAt: row.receipt_deleted_at ?? undefined,
+    decidedAt: row.decided_at ?? undefined,
     status: row.status,
     adminNotes: row.admin_notes ?? undefined,
     createdAt: row.created_at

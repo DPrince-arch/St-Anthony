@@ -82,6 +82,10 @@ export interface Station {
 export interface StationsOfTheCross {
   opening: string;
   stations: Station[];
+  versicle: {
+    call: string;
+    response: string;
+  };
   closing: string;
 }
 
@@ -142,6 +146,10 @@ export interface Booking {
   details?: Record<string, string>;
   hasReceipt?: boolean;
   receiptUploadedAt?: string;
+  /** Set when the receipt image was removed (on rejection). */
+  receiptDeletedAt?: string;
+  /** When the booking was approved, rejected or completed; it is deleted a week later. */
+  decidedAt?: string;
   // Admin fields
   status: BookingStatus;
   adminNotes?: string;

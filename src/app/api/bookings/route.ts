@@ -5,6 +5,7 @@ import { getSupabaseAdmin, RECEIPTS_BUCKET, toBooking } from '@/lib/supabase';
 import { BookingStatus, BookingType } from '@/lib/types';
 import { CoreField, getBookingConfig, isBookingType, isCoreField } from '@/lib/bookingCatalog';
 import { todayInParish } from '@/lib/dates';
+import { purgeExpiredBookingsQuietly } from '@/lib/bookingRetention';
 
 const bookingStatuses: BookingStatus[] = ['pending', 'approved', 'rejected', 'completed'];
 const emptyStatusCounts: Record<BookingStatus, number> = {
@@ -45,6 +46,10 @@ export async function GET(request: NextRequest) {
     if (requestedDate && !/^\d{4}-\d{2}-\d{2}$/.test(requestedDate)) {
       return NextResponse.json({ success: false, error: 'Invalid requested date filter' }, { status: 400 });
     }
+
+    // Remove anything past its retention week before listing, so the admin never sees it
+    // (the daily /api/cron/cleanup job does the same when nobody opens the admin panel).
+    await purgeExpiredBookingsQuietly();
 
     const supabase = getSupabaseAdmin();
     let bookingsQuery = supabase
@@ -225,10 +230,13 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const { data, error } = await getSupabaseAdmin()
+    const supabase = getSupabaseAdmin();
+    const { data, error } = await supabase
       .from('bookings')
       .update({
         status,
+        // Starts the one-week retention clock (see retentionPolicy.ts); cleared if moved back to pending.
+        decided_at: status === 'pending' ? null : new Date().toISOString(),
         ...(typeof adminNotes === 'string' ? { admin_notes: adminNotes } : {})
       })
       .eq('id', id)
@@ -238,6 +246,23 @@ export async function PATCH(request: NextRequest) {
     if (error) throw error;
     if (!data) {
       return NextResponse.json({ success: false, error: 'Booking not found' }, { status: 404 });
+    }
+
+    // A rejected booking's receipt is not needed, so remove it straight away.
+    if (status === 'rejected' && data.receipt_path) {
+      const { error: removeError } = await supabase.storage.from(RECEIPTS_BUCKET).remove([data.receipt_path]);
+      if (removeError) {
+        console.error('Failed to remove rejected booking receipt:', removeError);
+      } else {
+        const { data: updated, error: updateError } = await supabase
+          .from('bookings')
+          .update({ receipt_path: null, receipt_deleted_at: new Date().toISOString() })
+          .eq('id', id)
+          .select('*')
+          .single();
+        if (updateError) throw updateError;
+        return NextResponse.json({ success: true, data: toBooking(updated) });
+      }
     }
 
     return NextResponse.json({ success: true, data: toBooking(data) });

@@ -273,7 +273,7 @@ export function BookingsSection({ settings, defaultType = 'mass_intention', sect
   const bankDetails = settings?.bankDetails || {
     bankName: "Zenith Bank Plc",
     accountName: "St. Anthony Catholic Church - Mass Stipend",
-    accountNumber: "1018892341",
+    accountNumber: "9135153841",
     note: "Please transfer your Mass stipend and upload your payment transfer receipt below."
   };
 
